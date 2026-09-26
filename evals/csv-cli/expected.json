@@ -1,0 +1,6 @@
+{
+  "components": ["cli"],
+  "flags_true": [],
+  "integrations_include": [],
+  "docs_include": ["cli", "prd", "architecture", "test-strategy", "operations", "agents"]
+}

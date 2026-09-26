@@ -1,0 +1,33 @@
+{
+  "mirage_version": "0.1.0",
+  "name": "Hollow Lane Cycles",
+  "language": "en",
+  "components": [
+    {
+      "id": "app",
+      "kind": "mobile-app"
+    },
+    {
+      "id": "api",
+      "kind": "backend-service"
+    }
+  ],
+  "flags": {
+    "notifications": true,
+    "source_documents": true
+  },
+  "integrations": [
+    "sprocket-supply"
+  ],
+  "regulated": [],
+  "domain_topics": [],
+  "releases": [
+    "v1.0",
+    "v1.1"
+  ],
+  "areas": [
+    "mobile",
+    "backend"
+  ],
+  "require_confirmed_delegation": false
+}

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Mirage backlog"
+  short_description: "Plan milestones, epics, stories and tasks as local files"

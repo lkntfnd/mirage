@@ -1,0 +1,3 @@
+interface:
+  display_name: "Mirage sync"
+  short_description: "Project the backlog into Plane, Jira, GitHub or Linear"

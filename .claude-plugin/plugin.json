@@ -1,0 +1,27 @@
+{
+  "name": "mirage",
+  "version": "0.1.0",
+  "description": "Interview the owner, generate the full documentation set a project needs, and plan milestones, epics, stories and tasks locally, with optional sync to Plane, Jira, GitHub Issues or Linear.",
+  "author": {
+    "name": "lkntfnd",
+    "url": "https://github.com/lkntfnd"
+  },
+  "homepage": "https://github.com/lkntfnd/mirage",
+  "repository": "https://github.com/lkntfnd/mirage",
+  "license": "MIT",
+  "keywords": [
+    "documentation",
+    "requirements",
+    "planning",
+    "backlog",
+    "agents",
+    "plane",
+    "jira"
+  ],
+  "dependencies": [
+    {
+      "name": "mattpocock-skills",
+      "marketplace": "claude-plugins-official"
+    }
+  ]
+}

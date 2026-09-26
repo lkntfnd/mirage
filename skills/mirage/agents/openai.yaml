@@ -1,0 +1,5 @@
+interface:
+  display_name: "Mirage"
+  short_description: "Start or continue mirage documentation and backlog"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Mirage audit"
+  short_description: "Validate and review the project documentation and backlog"

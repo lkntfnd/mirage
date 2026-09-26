@@ -1,0 +1,2421 @@
+{
+  "version": 1,
+  "component_kinds": [
+    "website",
+    "web-app",
+    "mobile-app",
+    "desktop-app",
+    "browser-extension",
+    "backend-service",
+    "cli",
+    "library",
+    "data-pipeline",
+    "embedded",
+    "game"
+  ],
+  "flags": [
+    "accounts",
+    "personal_data",
+    "payments",
+    "cms",
+    "i18n",
+    "analytics",
+    "notifications",
+    "search",
+    "offline",
+    "realtime",
+    "ai",
+    "admin",
+    "migration",
+    "source_documents"
+  ],
+  "lists": [
+    "integrations",
+    "regulated",
+    "domain_topics"
+  ],
+  "docs": [
+    {
+      "id": "glossary",
+      "title": "Glossary",
+      "path": "CONTEXT.md",
+      "when": "always",
+      "check": "exists",
+      "sections": [],
+      "areas": [
+        {
+          "key": "terms",
+          "ask": "Which words the project uses for its core concepts, and which synonyms to avoid."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "questions",
+      "title": "Question register",
+      "path": "docs/questions.md",
+      "when": "always",
+      "check": "register",
+      "sections": [],
+      "areas": [],
+      "inputs": []
+    },
+    {
+      "id": "inputs",
+      "title": "Inputs register",
+      "path": "docs/inputs.md",
+      "when": "always",
+      "check": "register",
+      "sections": [],
+      "areas": [],
+      "inputs": []
+    },
+    {
+      "id": "index",
+      "title": "Documentation index",
+      "path": "docs/README.md",
+      "when": "always",
+      "check": "generated",
+      "sections": [],
+      "areas": [],
+      "inputs": []
+    },
+    {
+      "id": "prd",
+      "title": "Product requirements",
+      "path": "docs/prd.md",
+      "when": "always",
+      "check": "sections",
+      "sections": [
+        {
+          "key": "summary",
+          "title": "Product summary"
+        },
+        {
+          "key": "users",
+          "title": "Users and roles"
+        },
+        {
+          "key": "releases",
+          "title": "Releases and scope"
+        },
+        {
+          "key": "metrics",
+          "title": "Success metrics"
+        },
+        {
+          "key": "areas",
+          "title": "Requirement areas"
+        },
+        {
+          "key": "requirements",
+          "title": "Requirements"
+        },
+        {
+          "key": "out-of-scope",
+          "title": "Out of scope"
+        }
+      ],
+      "areas": [
+        {
+          "key": "problem",
+          "ask": "What problem the product solves, for whom, and why now."
+        },
+        {
+          "key": "users",
+          "ask": "Which kinds of users exist, what each role may do, and which role matters most."
+        },
+        {
+          "key": "goals",
+          "ask": "Which measurable outcomes define success, with target values and a date or release."
+        },
+        {
+          "key": "scope",
+          "ask": "Which capabilities the first release must have, and which can wait."
+        },
+        {
+          "key": "releases",
+          "ask": "Which releases are planned, their names, and what each one adds."
+        },
+        {
+          "key": "constraints",
+          "ask": "Which fixed constraints apply: budget, deadlines, mandated technology, legal limits."
+        },
+        {
+          "key": "references",
+          "ask": "Which existing products to learn from, and what to copy or avoid in each."
+        },
+        {
+          "key": "exclusions",
+          "ask": "What the product will explicitly not do."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "brief",
+          "title": "Existing briefs, specifications or pitch documents",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "architecture",
+      "title": "Architecture",
+      "path": "docs/architecture.md",
+      "when": "always",
+      "check": "sections",
+      "sections": [
+        {
+          "key": "context",
+          "title": "System context"
+        },
+        {
+          "key": "components",
+          "title": "Components and stack"
+        },
+        {
+          "key": "data-flows",
+          "title": "Data flows"
+        },
+        {
+          "key": "environments",
+          "title": "Environments"
+        },
+        {
+          "key": "decisions",
+          "title": "Decision index"
+        },
+        {
+          "key": "repository",
+          "title": "Repository layout"
+        }
+      ],
+      "areas": [
+        {
+          "key": "stack",
+          "ask": "Which languages, frameworks and runtimes each component uses, and any mandated or forbidden choices."
+        },
+        {
+          "key": "hosting",
+          "ask": "Where each component runs, and who owns those accounts."
+        },
+        {
+          "key": "data-flows",
+          "ask": "How data moves between components and external systems."
+        },
+        {
+          "key": "environments",
+          "ask": "Which environments exist, such as local, staging and production, and what differs between them."
+        },
+        {
+          "key": "repository",
+          "ask": "Whether the code lives in one repository or several, and how directories map to components."
+        },
+        {
+          "key": "existing",
+          "ask": "Which existing systems, code or infrastructure the project must reuse or connect to."
+        },
+        {
+          "key": "scale",
+          "ask": "What load and growth the system must handle at launch and a year later."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "code-access",
+          "title": "Access to existing code repositories",
+          "kind": "access"
+        },
+        {
+          "key": "hosting-account",
+          "title": "Hosting or cloud account",
+          "kind": "account"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security",
+      "path": "docs/security.md",
+      "when": "always",
+      "check": "sections",
+      "sections": [
+        {
+          "key": "assets",
+          "title": "Assets and data classification"
+        },
+        {
+          "key": "threats",
+          "title": "Threats"
+        },
+        {
+          "key": "controls",
+          "title": "Controls"
+        },
+        {
+          "key": "secrets",
+          "title": "Secrets management"
+        },
+        {
+          "key": "supply-chain",
+          "title": "Dependency and secret scanning"
+        },
+        {
+          "key": "incidents",
+          "title": "Incident response"
+        }
+      ],
+      "areas": [
+        {
+          "key": "assets",
+          "ask": "Which data and capabilities would hurt most if leaked, altered or lost."
+        },
+        {
+          "key": "threats",
+          "ask": "Who might attack or abuse the product, and how."
+        },
+        {
+          "key": "authorization",
+          "ask": "How access is decided for each role and resource."
+        },
+        {
+          "key": "secrets",
+          "ask": "Where secrets live, who can read them, and how they rotate."
+        },
+        {
+          "key": "supply-chain",
+          "ask": "How dependencies and committed secrets are scanned, and what blocks a merge."
+        },
+        {
+          "key": "incidents",
+          "ask": "Who responds to a security incident, how they are reached, and who must be told."
+        },
+        {
+          "key": "testing",
+          "ask": "Which security testing is required before launch, such as a penetration test."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "security-contact",
+          "title": "Security contact and escalation path",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "test-strategy",
+      "title": "Test strategy",
+      "path": "docs/test-strategy.md",
+      "when": "always",
+      "check": "sections",
+      "sections": [
+        {
+          "key": "levels",
+          "title": "Test levels"
+        },
+        {
+          "key": "tools",
+          "title": "Tools"
+        },
+        {
+          "key": "environments",
+          "title": "Test environments and data"
+        },
+        {
+          "key": "scenarios",
+          "title": "Scenario IDs"
+        },
+        {
+          "key": "done",
+          "title": "Definition of done"
+        },
+        {
+          "key": "evidence",
+          "title": "Evidence"
+        }
+      ],
+      "areas": [
+        {
+          "key": "levels",
+          "ask": "Which test levels are expected, such as unit, integration and end-to-end, and what each must cover."
+        },
+        {
+          "key": "matrix",
+          "ask": "Which devices, browsers, operating systems or runtimes must be tested."
+        },
+        {
+          "key": "data",
+          "ask": "Which test data and fixtures exist, and whether production data may be used."
+        },
+        {
+          "key": "manual",
+          "ask": "Which checks stay manual, and who runs them."
+        },
+        {
+          "key": "acceptance",
+          "ask": "Who accepts finished work, and on what evidence."
+        },
+        {
+          "key": "gates",
+          "ask": "Which checks must pass before a merge and before a release."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "test-devices",
+          "title": "Test devices or device-cloud access",
+          "kind": "tool"
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "title": "Operations",
+      "path": "docs/operations.md",
+      "when": "always",
+      "check": "sections",
+      "sections": [
+        {
+          "key": "environments",
+          "title": "Environments"
+        },
+        {
+          "key": "ci-cd",
+          "title": "CI/CD"
+        },
+        {
+          "key": "release",
+          "title": "Release and rollback"
+        },
+        {
+          "key": "hosting",
+          "title": "Hosting and domains"
+        },
+        {
+          "key": "observability",
+          "title": "Observability"
+        },
+        {
+          "key": "backups",
+          "title": "Backups and recovery"
+        },
+        {
+          "key": "support",
+          "title": "Support"
+        }
+      ],
+      "areas": [
+        {
+          "key": "ci",
+          "ask": "Which CI service runs the checks, and on which events."
+        },
+        {
+          "key": "deploy",
+          "ask": "How each component is deployed, and who may deploy."
+        },
+        {
+          "key": "cadence",
+          "ask": "How often releases ship, and how they are announced."
+        },
+        {
+          "key": "rollback",
+          "ask": "How a bad release is rolled back, and how fast."
+        },
+        {
+          "key": "monitoring",
+          "ask": "Which logs, metrics, alerts and error tracking exist, and who receives alerts."
+        },
+        {
+          "key": "backups",
+          "ask": "What is backed up, how often, and how much data loss and downtime are acceptable."
+        },
+        {
+          "key": "domains",
+          "ask": "Which domains exist, who controls DNS, and how certificates renew."
+        },
+        {
+          "key": "support",
+          "ask": "How users report problems, and who handles them."
+        },
+        {
+          "key": "costs",
+          "ask": "What the running costs may be, and who pays them."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "ci-account",
+          "title": "CI service account",
+          "kind": "account"
+        },
+        {
+          "key": "hosting-access",
+          "title": "Hosting and deployment access",
+          "kind": "access"
+        },
+        {
+          "key": "dns-access",
+          "title": "Domain registrar and DNS access",
+          "kind": "access"
+        },
+        {
+          "key": "error-tracking",
+          "title": "Error tracking account",
+          "kind": "account"
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "title": "Agent rules",
+      "path": "AGENTS.md",
+      "when": "always",
+      "check": "sections",
+      "sections": [
+        {
+          "key": "read-first",
+          "title": "Read first"
+        },
+        {
+          "key": "authority",
+          "title": "Scope and authority"
+        },
+        {
+          "key": "lanes",
+          "title": "Lanes"
+        },
+        {
+          "key": "workflow",
+          "title": "Picking and finishing work"
+        },
+        {
+          "key": "conventions",
+          "title": "Branches, commits and pull requests"
+        },
+        {
+          "key": "verification",
+          "title": "Verification"
+        },
+        {
+          "key": "evidence",
+          "title": "Evidence"
+        }
+      ],
+      "areas": [
+        {
+          "key": "builders",
+          "ask": "Which agents and people build the project, and which area each owns."
+        },
+        {
+          "key": "areas",
+          "ask": "Which area labels the project uses."
+        },
+        {
+          "key": "branching",
+          "ask": "Which base branch work starts from, and how branches are named."
+        },
+        {
+          "key": "review",
+          "ask": "Who reviews and who merges, and whether agents may merge."
+        },
+        {
+          "key": "autonomy",
+          "ask": "What agents may do without asking, such as pushing, opening pull requests or deploying."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "ux",
+      "title": "User experience",
+      "path": "docs/ux.md",
+      "when": {
+        "component": [
+          "website",
+          "web-app",
+          "mobile-app",
+          "desktop-app",
+          "browser-extension",
+          "game"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "basis",
+          "title": "Design basis"
+        },
+        {
+          "key": "inventory",
+          "title": "Screen inventory"
+        },
+        {
+          "key": "flows",
+          "title": "Flows"
+        },
+        {
+          "key": "navigation",
+          "title": "Navigation map"
+        },
+        {
+          "key": "links",
+          "title": "Links and deep links"
+        },
+        {
+          "key": "accessibility",
+          "title": "Accessibility"
+        },
+        {
+          "key": "responsive",
+          "title": "Responsive and platform rules"
+        }
+      ],
+      "areas": [
+        {
+          "key": "basis",
+          "ask": "Whether designs already exist, where, and how closely to follow them."
+        },
+        {
+          "key": "inventory",
+          "ask": "Which screens or pages exist in the first release."
+        },
+        {
+          "key": "flows",
+          "ask": "Which user journeys matter most, step by step."
+        },
+        {
+          "key": "navigation",
+          "ask": "How users move between screens, and what the main navigation holds."
+        },
+        {
+          "key": "states",
+          "ask": "How each screen behaves while loading, when empty, on error and offline."
+        },
+        {
+          "key": "accessibility",
+          "ask": "Which accessibility standard applies, such as WCAG 2.2 AA."
+        },
+        {
+          "key": "responsive",
+          "ask": "Which screen sizes, orientations and input methods must work."
+        },
+        {
+          "key": "links",
+          "ask": "Which screens can be opened from a link, a notification or another app."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "designs",
+          "title": "Design files or wireframes",
+          "kind": "asset"
+        },
+        {
+          "key": "design-tool",
+          "title": "Access to the design tool",
+          "kind": "tool"
+        }
+      ]
+    },
+    {
+      "id": "screen",
+      "title": "Screen or page spec",
+      "path": "docs/specs/{component}/{name}.md",
+      "when": {
+        "listed_in": "ux"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "purpose",
+          "title": "Purpose"
+        },
+        {
+          "key": "entry",
+          "title": "Entry points"
+        },
+        {
+          "key": "layout",
+          "title": "Layout and content"
+        },
+        {
+          "key": "states",
+          "title": "States"
+        },
+        {
+          "key": "interactions",
+          "title": "Interactions"
+        },
+        {
+          "key": "data",
+          "title": "Data"
+        },
+        {
+          "key": "events",
+          "title": "Analytics events"
+        },
+        {
+          "key": "strings",
+          "title": "Text and translations"
+        },
+        {
+          "key": "accessibility",
+          "title": "Accessibility"
+        },
+        {
+          "key": "acceptance",
+          "title": "Acceptance criteria"
+        }
+      ],
+      "areas": [],
+      "inputs": []
+    },
+    {
+      "id": "design-system",
+      "title": "Design system",
+      "path": "docs/design-system.md",
+      "when": {
+        "component": [
+          "website",
+          "web-app",
+          "mobile-app",
+          "desktop-app",
+          "browser-extension",
+          "game"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "tokens",
+          "title": "Tokens"
+        },
+        {
+          "key": "typography",
+          "title": "Typography"
+        },
+        {
+          "key": "color",
+          "title": "Color"
+        },
+        {
+          "key": "components",
+          "title": "Components"
+        },
+        {
+          "key": "motion",
+          "title": "Motion"
+        },
+        {
+          "key": "imagery",
+          "title": "Icons and imagery"
+        }
+      ],
+      "areas": [
+        {
+          "key": "brand",
+          "ask": "Which brand identity exists, and what may not change."
+        },
+        {
+          "key": "typography",
+          "ask": "Which typefaces are used, and whether their licenses cover the product."
+        },
+        {
+          "key": "color",
+          "ask": "Which colors are used, and whether a dark theme is required."
+        },
+        {
+          "key": "components",
+          "ask": "Whether to use an existing component library, and which one."
+        },
+        {
+          "key": "motion",
+          "ask": "How much animation the product uses, and whether reduced motion is respected."
+        },
+        {
+          "key": "imagery",
+          "ask": "Which icon set and image style are used, and where images come from."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "logo",
+          "title": "Logo files in vector format",
+          "kind": "asset"
+        },
+        {
+          "key": "brand-guide",
+          "title": "Brand guidelines",
+          "kind": "asset"
+        },
+        {
+          "key": "fonts",
+          "title": "Font files and licenses",
+          "kind": "asset"
+        }
+      ]
+    },
+    {
+      "id": "performance",
+      "title": "Performance",
+      "path": "docs/performance.md",
+      "when": {
+        "component": [
+          "website",
+          "web-app",
+          "mobile-app",
+          "desktop-app",
+          "browser-extension",
+          "game",
+          "backend-service"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "budgets",
+          "title": "Budgets"
+        },
+        {
+          "key": "measurement",
+          "title": "Measurement"
+        },
+        {
+          "key": "techniques",
+          "title": "Techniques"
+        },
+        {
+          "key": "monitoring",
+          "title": "Monitoring"
+        }
+      ],
+      "areas": [
+        {
+          "key": "budgets",
+          "ask": "Which speed targets apply, such as page load, app start or API latency."
+        },
+        {
+          "key": "conditions",
+          "ask": "On which devices and networks the targets must hold."
+        },
+        {
+          "key": "load",
+          "ask": "How many users or requests the system must serve at peak."
+        },
+        {
+          "key": "measurement",
+          "ask": "How and where each target is measured."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "content",
+      "title": "Content",
+      "path": "docs/content.md",
+      "when": {
+        "any": [
+          {
+            "component": [
+              "website"
+            ]
+          },
+          {
+            "flag": "cms"
+          }
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "model",
+          "title": "Content model"
+        },
+        {
+          "key": "inventory",
+          "title": "Page content inventory"
+        },
+        {
+          "key": "workflow",
+          "title": "Editorial workflow"
+        },
+        {
+          "key": "cms",
+          "title": "Content management"
+        },
+        {
+          "key": "media",
+          "title": "Media"
+        },
+        {
+          "key": "legal",
+          "title": "Legal pages"
+        }
+      ],
+      "areas": [
+        {
+          "key": "types",
+          "ask": "Which kinds of content exist, such as pages, posts or products, and their fields."
+        },
+        {
+          "key": "sources",
+          "ask": "Who writes the content, and which content already exists."
+        },
+        {
+          "key": "cms",
+          "ask": "Which content management system is used, and who edits in it."
+        },
+        {
+          "key": "workflow",
+          "ask": "How content is drafted, reviewed and published."
+        },
+        {
+          "key": "media",
+          "ask": "How images and videos are sourced, sized and stored."
+        },
+        {
+          "key": "legal",
+          "ask": "Which legal pages are required, such as privacy policy, terms and imprint, and who writes them."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "existing-content",
+          "title": "Existing content to reuse",
+          "kind": "information"
+        },
+        {
+          "key": "legal-texts",
+          "title": "Legal texts",
+          "kind": "information"
+        },
+        {
+          "key": "media",
+          "title": "Photos, videos and other media",
+          "kind": "asset"
+        },
+        {
+          "key": "cms-account",
+          "title": "Content management system account",
+          "kind": "account"
+        }
+      ]
+    },
+    {
+      "id": "seo",
+      "title": "Search engine optimization",
+      "path": "docs/seo.md",
+      "when": {
+        "component": [
+          "website"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "indexing",
+          "title": "Indexable pages"
+        },
+        {
+          "key": "metadata",
+          "title": "Metadata"
+        },
+        {
+          "key": "structured-data",
+          "title": "Structured data"
+        },
+        {
+          "key": "sitemaps",
+          "title": "Sitemaps and robots"
+        },
+        {
+          "key": "redirects",
+          "title": "Redirects"
+        },
+        {
+          "key": "social",
+          "title": "Social previews"
+        }
+      ],
+      "areas": [
+        {
+          "key": "markets",
+          "ask": "Which markets, languages and search terms matter."
+        },
+        {
+          "key": "indexing",
+          "ask": "Which pages search engines should index, and which not."
+        },
+        {
+          "key": "metadata",
+          "ask": "How page titles and descriptions are written."
+        },
+        {
+          "key": "structured-data",
+          "ask": "Which structured data types apply, such as organization, product or article."
+        },
+        {
+          "key": "redirects",
+          "ask": "Which old URLs must redirect, and where."
+        },
+        {
+          "key": "social",
+          "ask": "How shared links look on social networks and messengers."
+        },
+        {
+          "key": "tools",
+          "ask": "Which search console accounts exist, and who owns them."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "search-console",
+          "title": "Search console access",
+          "kind": "access"
+        },
+        {
+          "key": "old-urls",
+          "title": "List of existing URLs",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "title": "API",
+      "path": "docs/api.md",
+      "when": {
+        "component": [
+          "backend-service"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "consumers",
+          "title": "Consumers"
+        },
+        {
+          "key": "conventions",
+          "title": "Conventions"
+        },
+        {
+          "key": "auth",
+          "title": "Authentication"
+        },
+        {
+          "key": "errors",
+          "title": "Errors"
+        },
+        {
+          "key": "pagination",
+          "title": "Pagination"
+        },
+        {
+          "key": "idempotency",
+          "title": "Idempotency"
+        },
+        {
+          "key": "versioning",
+          "title": "Versioning"
+        },
+        {
+          "key": "limits",
+          "title": "Rate limits"
+        },
+        {
+          "key": "endpoints",
+          "title": "Endpoint inventory"
+        },
+        {
+          "key": "contract",
+          "title": "Contract file"
+        }
+      ],
+      "areas": [
+        {
+          "key": "consumers",
+          "ask": "Which clients call the API, and which of them are outside the team's control."
+        },
+        {
+          "key": "style",
+          "ask": "Which API style is used, such as REST, GraphQL or gRPC, and which contract format."
+        },
+        {
+          "key": "auth",
+          "ask": "How callers authenticate, and how permissions are checked."
+        },
+        {
+          "key": "errors",
+          "ask": "How errors are reported, and which error codes clients rely on."
+        },
+        {
+          "key": "versioning",
+          "ask": "How breaking changes are introduced, and how long old versions live."
+        },
+        {
+          "key": "limits",
+          "ask": "Which rate limits and quotas apply."
+        },
+        {
+          "key": "idempotency",
+          "ask": "Which operations must be safe to retry."
+        },
+        {
+          "key": "webhooks",
+          "ask": "Which webhooks the system sends or receives."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "data-model",
+      "title": "Data model",
+      "path": "docs/data-model.md",
+      "when": {
+        "any": [
+          {
+            "component": [
+              "backend-service",
+              "data-pipeline"
+            ]
+          },
+          {
+            "flag": "accounts"
+          }
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "entities",
+          "title": "Entities"
+        },
+        {
+          "key": "storage",
+          "title": "Storage"
+        },
+        {
+          "key": "constraints",
+          "title": "Constraints"
+        },
+        {
+          "key": "migrations",
+          "title": "Migrations"
+        },
+        {
+          "key": "retention",
+          "title": "Retention"
+        }
+      ],
+      "areas": [
+        {
+          "key": "entities",
+          "ask": "Which entities exist, and how they relate."
+        },
+        {
+          "key": "storage",
+          "ask": "Which databases or stores hold the data, and why."
+        },
+        {
+          "key": "volume",
+          "ask": "How much data exists at launch, and how fast it grows."
+        },
+        {
+          "key": "retention",
+          "ask": "How long each kind of data is kept, and how it is deleted."
+        },
+        {
+          "key": "migrations",
+          "ask": "How schema changes are applied and rolled back."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "existing-data",
+          "title": "Access to existing data",
+          "kind": "access"
+        }
+      ]
+    },
+    {
+      "id": "cli",
+      "title": "Command-line interface",
+      "path": "docs/cli.md",
+      "when": {
+        "component": [
+          "cli"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "commands",
+          "title": "Commands"
+        },
+        {
+          "key": "options",
+          "title": "Options"
+        },
+        {
+          "key": "exit-codes",
+          "title": "Exit codes"
+        },
+        {
+          "key": "output",
+          "title": "Output formats"
+        },
+        {
+          "key": "configuration",
+          "title": "Configuration and environment"
+        },
+        {
+          "key": "distribution",
+          "title": "Distribution"
+        }
+      ],
+      "areas": [
+        {
+          "key": "commands",
+          "ask": "Which commands and subcommands exist, and what each does."
+        },
+        {
+          "key": "output",
+          "ask": "Which output formats are supported, such as text for people and JSON for scripts."
+        },
+        {
+          "key": "configuration",
+          "ask": "How the tool is configured: flags, files and environment variables, and their precedence."
+        },
+        {
+          "key": "errors",
+          "ask": "How errors are reported, and which exit codes scripts rely on."
+        },
+        {
+          "key": "distribution",
+          "ask": "How the tool is installed, such as a package registry, Homebrew or binaries."
+        },
+        {
+          "key": "platforms",
+          "ask": "Which operating systems and architectures are supported."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "public-api",
+      "title": "Public API",
+      "path": "docs/public-api.md",
+      "when": {
+        "component": [
+          "library"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "audience",
+          "title": "Audience"
+        },
+        {
+          "key": "exports",
+          "title": "Exports"
+        },
+        {
+          "key": "versioning",
+          "title": "Versioning"
+        },
+        {
+          "key": "compatibility",
+          "title": "Compatibility"
+        },
+        {
+          "key": "deprecation",
+          "title": "Deprecation"
+        },
+        {
+          "key": "distribution",
+          "title": "Distribution"
+        }
+      ],
+      "areas": [
+        {
+          "key": "audience",
+          "ask": "Who uses the library, and in which kinds of projects."
+        },
+        {
+          "key": "exports",
+          "ask": "Which functions, types and modules are public."
+        },
+        {
+          "key": "versioning",
+          "ask": "Which versioning policy applies, and what counts as a breaking change."
+        },
+        {
+          "key": "compatibility",
+          "ask": "Which language, runtime and platform versions are supported."
+        },
+        {
+          "key": "distribution",
+          "ask": "Which registry publishes the library, and who can publish."
+        },
+        {
+          "key": "reference",
+          "ask": "How the API reference is generated and hosted."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "platform",
+      "title": "Platform",
+      "path": "docs/platforms/{kind}.md",
+      "when": {
+        "per_component": [
+          "mobile-app",
+          "desktop-app",
+          "browser-extension",
+          "embedded",
+          "game"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "targets",
+          "title": "Supported platforms and versions"
+        },
+        {
+          "key": "distribution",
+          "title": "Distribution and review"
+        },
+        {
+          "key": "permissions",
+          "title": "Permissions"
+        },
+        {
+          "key": "updates",
+          "title": "Updates"
+        },
+        {
+          "key": "signing",
+          "title": "Signing and credentials"
+        },
+        {
+          "key": "crashes",
+          "title": "Crash reporting"
+        }
+      ],
+      "areas": [
+        {
+          "key": "targets",
+          "ask": "Which platforms and minimum versions are supported."
+        },
+        {
+          "key": "distribution",
+          "ask": "Which stores or channels distribute the product, and whose accounts publish it."
+        },
+        {
+          "key": "permissions",
+          "ask": "Which device permissions are needed, and why each one."
+        },
+        {
+          "key": "updates",
+          "ask": "How updates reach users, and whether old versions can be forced to update."
+        },
+        {
+          "key": "signing",
+          "ask": "Who holds the signing keys and certificates."
+        },
+        {
+          "key": "crashes",
+          "ask": "How crashes are reported and triaged."
+        },
+        {
+          "key": "device-features",
+          "ask": "Which device features are used, such as camera, location, push or biometrics."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "store-accounts",
+          "title": "App store or distribution accounts",
+          "kind": "account"
+        },
+        {
+          "key": "signing-access",
+          "title": "Access to signing keys and certificates",
+          "kind": "access"
+        },
+        {
+          "key": "devices",
+          "title": "Physical test devices",
+          "kind": "tool"
+        }
+      ]
+    },
+    {
+      "id": "data-pipeline",
+      "title": "Data pipeline",
+      "path": "docs/data-pipeline.md",
+      "when": {
+        "component": [
+          "data-pipeline"
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "sources",
+          "title": "Sources"
+        },
+        {
+          "key": "schedules",
+          "title": "Schedules"
+        },
+        {
+          "key": "transformations",
+          "title": "Transformations"
+        },
+        {
+          "key": "quality",
+          "title": "Data quality"
+        },
+        {
+          "key": "backfills",
+          "title": "Backfills"
+        },
+        {
+          "key": "consumers",
+          "title": "Consumers"
+        }
+      ],
+      "areas": [
+        {
+          "key": "sources",
+          "ask": "Which systems the data comes from, and in which formats."
+        },
+        {
+          "key": "freshness",
+          "ask": "How fresh the output must be."
+        },
+        {
+          "key": "transformations",
+          "ask": "Which transformations produce the output."
+        },
+        {
+          "key": "quality",
+          "ask": "Which quality checks run, and what happens when one fails."
+        },
+        {
+          "key": "backfills",
+          "ask": "How historical data is reprocessed."
+        },
+        {
+          "key": "consumers",
+          "ask": "Who uses the output, and how."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "source-access",
+          "title": "Access to source systems",
+          "kind": "access"
+        }
+      ]
+    },
+    {
+      "id": "ai",
+      "title": "AI features",
+      "path": "docs/ai.md",
+      "when": {
+        "flag": "ai"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "use-cases",
+          "title": "Use cases"
+        },
+        {
+          "key": "models",
+          "title": "Models and providers"
+        },
+        {
+          "key": "grounding",
+          "title": "Grounding data"
+        },
+        {
+          "key": "evaluation",
+          "title": "Evaluation"
+        },
+        {
+          "key": "safety",
+          "title": "Safety"
+        },
+        {
+          "key": "cost",
+          "title": "Cost and limits"
+        },
+        {
+          "key": "fallback",
+          "title": "Fallback"
+        }
+      ],
+      "areas": [
+        {
+          "key": "use-cases",
+          "ask": "Which user problems the AI features solve, and what a good answer looks like."
+        },
+        {
+          "key": "provider",
+          "ask": "Which model providers are allowed, and whether data may leave the region."
+        },
+        {
+          "key": "data",
+          "ask": "Which data grounds or trains the features, and whether users consented to that use."
+        },
+        {
+          "key": "evaluation",
+          "ask": "How quality is measured before and after release."
+        },
+        {
+          "key": "safety",
+          "ask": "Which harmful outputs or abuse must be prevented, and when a person reviews results."
+        },
+        {
+          "key": "cost",
+          "ask": "What each request may cost, and the monthly limit."
+        },
+        {
+          "key": "fallback",
+          "ask": "What users see when the model is slow, wrong or unavailable."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "provider-account",
+          "title": "Model provider account",
+          "kind": "account"
+        },
+        {
+          "key": "eval-data",
+          "title": "Evaluation examples",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "auth",
+      "title": "Authentication and accounts",
+      "path": "docs/auth.md",
+      "when": {
+        "flag": "accounts"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "identity",
+          "title": "Identity providers"
+        },
+        {
+          "key": "sign-in",
+          "title": "Sign-up and sign-in"
+        },
+        {
+          "key": "sessions",
+          "title": "Sessions"
+        },
+        {
+          "key": "roles",
+          "title": "Roles and permissions"
+        },
+        {
+          "key": "recovery",
+          "title": "Account recovery"
+        },
+        {
+          "key": "deletion",
+          "title": "Account deletion"
+        }
+      ],
+      "areas": [
+        {
+          "key": "providers",
+          "ask": "Which sign-in methods are offered, such as email, phone, social or single sign-on."
+        },
+        {
+          "key": "sign-up",
+          "ask": "What sign-up collects, and whether it needs verification or approval."
+        },
+        {
+          "key": "sessions",
+          "ask": "How long sessions last, and on how many devices."
+        },
+        {
+          "key": "roles",
+          "ask": "Which roles exist, and what each may do."
+        },
+        {
+          "key": "recovery",
+          "ask": "How users recover a lost account."
+        },
+        {
+          "key": "deletion",
+          "ask": "How users delete their account, and what happens to their data."
+        },
+        {
+          "key": "guests",
+          "ask": "What people can do without an account."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "identity-console",
+          "title": "Identity provider console access",
+          "kind": "account"
+        }
+      ]
+    },
+    {
+      "id": "privacy",
+      "title": "Privacy",
+      "path": "docs/privacy.md",
+      "when": {
+        "flag": "personal_data"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "inventory",
+          "title": "Personal data inventory"
+        },
+        {
+          "key": "legal-basis",
+          "title": "Legal basis"
+        },
+        {
+          "key": "consent",
+          "title": "Consent"
+        },
+        {
+          "key": "retention",
+          "title": "Retention"
+        },
+        {
+          "key": "requests",
+          "title": "Data subject requests"
+        },
+        {
+          "key": "processors",
+          "title": "Processors"
+        },
+        {
+          "key": "cookies",
+          "title": "Cookies and tracking"
+        }
+      ],
+      "areas": [
+        {
+          "key": "data",
+          "ask": "Which personal data is collected, and why each item is needed."
+        },
+        {
+          "key": "jurisdictions",
+          "ask": "Which privacy laws apply, such as GDPR or CCPA, based on where users live."
+        },
+        {
+          "key": "consent",
+          "ask": "Which processing needs consent, and how it is collected and withdrawn."
+        },
+        {
+          "key": "retention",
+          "ask": "How long personal data is kept."
+        },
+        {
+          "key": "requests",
+          "ask": "How users access, export or delete their data, and who handles requests."
+        },
+        {
+          "key": "processors",
+          "ask": "Which third parties receive personal data."
+        },
+        {
+          "key": "cookies",
+          "ask": "Which cookies and trackers are set, and which need consent."
+        },
+        {
+          "key": "children",
+          "ask": "Whether children may use the product."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "privacy-policy",
+          "title": "Privacy policy text or its author",
+          "kind": "information"
+        },
+        {
+          "key": "privacy-contact",
+          "title": "Privacy or legal contact",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "payments",
+      "title": "Payments",
+      "path": "docs/payments.md",
+      "when": {
+        "flag": "payments"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "provider",
+          "title": "Provider"
+        },
+        {
+          "key": "flows",
+          "title": "Payment flows"
+        },
+        {
+          "key": "currencies",
+          "title": "Currencies and taxes"
+        },
+        {
+          "key": "idempotency",
+          "title": "Idempotency"
+        },
+        {
+          "key": "refunds",
+          "title": "Refunds and disputes"
+        },
+        {
+          "key": "reconciliation",
+          "title": "Reconciliation"
+        },
+        {
+          "key": "compliance",
+          "title": "Card data scope"
+        },
+        {
+          "key": "scenarios",
+          "title": "Test scenarios"
+        }
+      ],
+      "areas": [
+        {
+          "key": "provider",
+          "ask": "Which payment provider is used, and who owns the merchant account."
+        },
+        {
+          "key": "methods",
+          "ask": "Which payment methods are offered."
+        },
+        {
+          "key": "flows",
+          "ask": "Which payment flows exist, such as one-off payments, subscriptions or deposits."
+        },
+        {
+          "key": "currencies",
+          "ask": "Which currencies are accepted, and how prices are rounded."
+        },
+        {
+          "key": "taxes",
+          "ask": "Which taxes apply, and who calculates them."
+        },
+        {
+          "key": "refunds",
+          "ask": "Who may refund, how much, and how disputes are handled."
+        },
+        {
+          "key": "reconciliation",
+          "ask": "How payments are matched against orders and payouts."
+        },
+        {
+          "key": "failures",
+          "ask": "What happens when a payment fails, times out or is confirmed twice."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "merchant-account",
+          "title": "Merchant account",
+          "kind": "account"
+        },
+        {
+          "key": "sandbox",
+          "title": "Payment provider sandbox access",
+          "kind": "access"
+        },
+        {
+          "key": "tax-rules",
+          "title": "Tax rules from an accountant",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "i18n",
+      "title": "Localization",
+      "path": "docs/i18n.md",
+      "when": {
+        "flag": "i18n"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "locales",
+          "title": "Locales"
+        },
+        {
+          "key": "fallback",
+          "title": "Fallback"
+        },
+        {
+          "key": "workflow",
+          "title": "Translation workflow"
+        },
+        {
+          "key": "formats",
+          "title": "Formats"
+        },
+        {
+          "key": "rtl",
+          "title": "Right-to-left"
+        },
+        {
+          "key": "content",
+          "title": "Translated content"
+        }
+      ],
+      "areas": [
+        {
+          "key": "locales",
+          "ask": "Which languages and regions are supported at launch and later."
+        },
+        {
+          "key": "default",
+          "ask": "Which language is the default, and how the language is chosen."
+        },
+        {
+          "key": "fallback",
+          "ask": "What is shown when a translation is missing."
+        },
+        {
+          "key": "workflow",
+          "ask": "Who translates, with which tools, and how translations are reviewed."
+        },
+        {
+          "key": "formats",
+          "ask": "How dates, numbers, currencies and addresses are formatted per locale."
+        },
+        {
+          "key": "rtl",
+          "ask": "Whether any right-to-left language is supported."
+        },
+        {
+          "key": "content",
+          "ask": "Whether user and editorial content is translated, and how."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "translations",
+          "title": "Existing translations or translators",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "events",
+      "title": "Analytics events",
+      "path": "docs/events.md",
+      "when": {
+        "flag": "analytics"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "questions",
+          "title": "Questions analytics must answer"
+        },
+        {
+          "key": "envelope",
+          "title": "Event envelope"
+        },
+        {
+          "key": "catalog",
+          "title": "Event catalog"
+        },
+        {
+          "key": "sinks",
+          "title": "Destinations"
+        },
+        {
+          "key": "consent",
+          "title": "Consent"
+        },
+        {
+          "key": "verification",
+          "title": "Verification"
+        }
+      ],
+      "areas": [
+        {
+          "key": "questions",
+          "ask": "Which business questions analytics must answer."
+        },
+        {
+          "key": "tools",
+          "ask": "Which analytics tools receive events."
+        },
+        {
+          "key": "events",
+          "ask": "Which user actions and system events are tracked."
+        },
+        {
+          "key": "identity",
+          "ask": "How users are identified across sessions and devices."
+        },
+        {
+          "key": "consent",
+          "ask": "Which tracking needs consent."
+        },
+        {
+          "key": "verification",
+          "ask": "How the team verifies that events arrive correctly."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "analytics-account",
+          "title": "Analytics tool account",
+          "kind": "account"
+        }
+      ]
+    },
+    {
+      "id": "integration",
+      "title": "Integration",
+      "path": "docs/integrations/{item}.md",
+      "when": {
+        "per": "integrations"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "purpose",
+          "title": "Purpose and requirements"
+        },
+        {
+          "key": "contract",
+          "title": "Contract"
+        },
+        {
+          "key": "auth",
+          "title": "Authentication"
+        },
+        {
+          "key": "limits",
+          "title": "Limits and quotas"
+        },
+        {
+          "key": "mapping",
+          "title": "Data mapping"
+        },
+        {
+          "key": "failures",
+          "title": "Failure handling"
+        },
+        {
+          "key": "scenarios",
+          "title": "Test scenarios"
+        }
+      ],
+      "areas": [
+        {
+          "key": "purpose",
+          "ask": "What the integration is for, and which requirements depend on it."
+        },
+        {
+          "key": "direction",
+          "ask": "Which way data flows, and whether it is real time or scheduled."
+        },
+        {
+          "key": "auth",
+          "ask": "How the project authenticates with the system, and who owns the credentials."
+        },
+        {
+          "key": "limits",
+          "ask": "Which rate limits, quotas and costs apply."
+        },
+        {
+          "key": "mapping",
+          "ask": "How the system's data maps onto the project's data."
+        },
+        {
+          "key": "failures",
+          "ask": "What happens when the system is slow, down or returns bad data."
+        },
+        {
+          "key": "sandbox",
+          "ask": "Whether a sandbox or test environment exists."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "api-docs",
+          "title": "API documentation",
+          "kind": "information"
+        },
+        {
+          "key": "sandbox",
+          "title": "Sandbox or test account",
+          "kind": "account"
+        }
+      ]
+    },
+    {
+      "id": "notifications",
+      "title": "Notifications",
+      "path": "docs/notifications.md",
+      "when": {
+        "flag": "notifications"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "channels",
+          "title": "Channels"
+        },
+        {
+          "key": "triggers",
+          "title": "Triggers"
+        },
+        {
+          "key": "templates",
+          "title": "Templates"
+        },
+        {
+          "key": "preferences",
+          "title": "Preferences"
+        },
+        {
+          "key": "caps",
+          "title": "Frequency caps"
+        },
+        {
+          "key": "deliverability",
+          "title": "Deliverability"
+        }
+      ],
+      "areas": [
+        {
+          "key": "channels",
+          "ask": "Which channels are used, such as email, push, SMS or in-app."
+        },
+        {
+          "key": "triggers",
+          "ask": "Which events send a notification, and to whom."
+        },
+        {
+          "key": "templates",
+          "ask": "Who writes the messages, and in which languages."
+        },
+        {
+          "key": "preferences",
+          "ask": "What users can switch on or off."
+        },
+        {
+          "key": "caps",
+          "ask": "How many messages a user may receive per day or week."
+        },
+        {
+          "key": "provider",
+          "ask": "Which delivery providers are used."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "notification-provider",
+          "title": "Email, push or SMS provider account",
+          "kind": "account"
+        },
+        {
+          "key": "sender-domain",
+          "title": "Sender domain and DNS access",
+          "kind": "access"
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "title": "Search",
+      "path": "docs/search.md",
+      "when": {
+        "flag": "search"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "scope",
+          "title": "Searchable content"
+        },
+        {
+          "key": "engine",
+          "title": "Engine and index"
+        },
+        {
+          "key": "ranking",
+          "title": "Ranking"
+        },
+        {
+          "key": "filters",
+          "title": "Filters and facets"
+        },
+        {
+          "key": "languages",
+          "title": "Languages"
+        },
+        {
+          "key": "zero-results",
+          "title": "Zero results"
+        },
+        {
+          "key": "scenarios",
+          "title": "Test scenarios"
+        }
+      ],
+      "areas": [
+        {
+          "key": "scope",
+          "ask": "What users can search for."
+        },
+        {
+          "key": "engine",
+          "ask": "Which search engine is used, and how the index stays fresh."
+        },
+        {
+          "key": "ranking",
+          "ask": "What decides the order of results."
+        },
+        {
+          "key": "filters",
+          "ask": "Which filters and facets are offered."
+        },
+        {
+          "key": "languages",
+          "ask": "Which languages and spelling mistakes search must handle."
+        },
+        {
+          "key": "zero-results",
+          "ask": "What users see when nothing matches."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "offline-realtime",
+      "title": "Offline and realtime",
+      "path": "docs/offline-realtime.md",
+      "when": {
+        "any": [
+          {
+            "flag": "offline"
+          },
+          {
+            "flag": "realtime"
+          }
+        ]
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "connectivity",
+          "title": "Connectivity states"
+        },
+        {
+          "key": "caching",
+          "title": "Caching"
+        },
+        {
+          "key": "sync",
+          "title": "Synchronization and conflicts"
+        },
+        {
+          "key": "realtime",
+          "title": "Realtime updates"
+        }
+      ],
+      "areas": [
+        {
+          "key": "offline-scope",
+          "ask": "What must work without a connection."
+        },
+        {
+          "key": "caching",
+          "ask": "What is cached on the device, and for how long."
+        },
+        {
+          "key": "conflicts",
+          "ask": "How conflicting edits are resolved."
+        },
+        {
+          "key": "realtime-scope",
+          "ask": "What must update live without a refresh."
+        },
+        {
+          "key": "transport",
+          "ask": "Which mechanism delivers live updates, such as WebSockets or server-sent events."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "admin",
+      "title": "Admin tools",
+      "path": "docs/admin.md",
+      "when": {
+        "flag": "admin"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "modules",
+          "title": "Modules"
+        },
+        {
+          "key": "roles",
+          "title": "Roles"
+        },
+        {
+          "key": "workflows",
+          "title": "Workflows"
+        },
+        {
+          "key": "audit",
+          "title": "Audit log"
+        }
+      ],
+      "areas": [
+        {
+          "key": "modules",
+          "ask": "Which admin screens and tools exist."
+        },
+        {
+          "key": "roles",
+          "ask": "Which staff roles exist, and what each may do."
+        },
+        {
+          "key": "workflows",
+          "ask": "Which operational workflows staff perform, such as moderation or refunds."
+        },
+        {
+          "key": "audit",
+          "ask": "Which staff actions are logged, and for how long."
+        },
+        {
+          "key": "bulk",
+          "ask": "Which bulk imports, exports or edits are needed."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "compliance",
+      "title": "Compliance",
+      "path": "docs/compliance.md",
+      "when": {
+        "nonempty": "regulated"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "regimes",
+          "title": "Regimes"
+        },
+        {
+          "key": "obligations",
+          "title": "Obligations"
+        },
+        {
+          "key": "controls",
+          "title": "Controls mapping"
+        },
+        {
+          "key": "evidence",
+          "title": "Evidence"
+        }
+      ],
+      "areas": [
+        {
+          "key": "regimes",
+          "ask": "Which regulations or standards apply, such as HIPAA, PCI DSS or SOC 2."
+        },
+        {
+          "key": "obligations",
+          "ask": "Which concrete obligations each regime imposes on this product."
+        },
+        {
+          "key": "audits",
+          "ask": "Which audits or certifications are needed, and when."
+        },
+        {
+          "key": "evidence",
+          "ask": "Which evidence each obligation needs, and where it is kept."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "compliance-docs",
+          "title": "Existing compliance documents or policies",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "migration",
+      "title": "Migration",
+      "path": "docs/migration.md",
+      "when": {
+        "flag": "migration"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "current",
+          "title": "Current system"
+        },
+        {
+          "key": "data",
+          "title": "Data migration"
+        },
+        {
+          "key": "urls",
+          "title": "URLs and redirects"
+        },
+        {
+          "key": "cutover",
+          "title": "Cutover"
+        },
+        {
+          "key": "rollback",
+          "title": "Rollback"
+        }
+      ],
+      "areas": [
+        {
+          "key": "current",
+          "ask": "What the current system does, and what must survive the move."
+        },
+        {
+          "key": "data",
+          "ask": "Which data moves, how it is transformed, and how it is verified."
+        },
+        {
+          "key": "urls",
+          "ask": "Which URLs, links or integrations must keep working."
+        },
+        {
+          "key": "cutover",
+          "ask": "How and when the switch happens, and what freezes during it."
+        },
+        {
+          "key": "rollback",
+          "ask": "How to return to the old system if the cutover fails."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "current-access",
+          "title": "Access to the current system",
+          "kind": "access"
+        },
+        {
+          "key": "data-export",
+          "title": "Export of the current data",
+          "kind": "information"
+        }
+      ]
+    },
+    {
+      "id": "domain",
+      "title": "Domain rules",
+      "path": "docs/domain/{item}.md",
+      "when": {
+        "per": "domain_topics"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "scope",
+          "title": "Scope and requirements"
+        },
+        {
+          "key": "rules",
+          "title": "Rules"
+        },
+        {
+          "key": "examples",
+          "title": "Worked examples"
+        },
+        {
+          "key": "constants",
+          "title": "Tunable values"
+        },
+        {
+          "key": "admin",
+          "title": "Admin controls"
+        },
+        {
+          "key": "scenarios",
+          "title": "Test scenarios"
+        }
+      ],
+      "areas": [
+        {
+          "key": "rules",
+          "ask": "Which rules decide the outcome, stated precisely."
+        },
+        {
+          "key": "examples",
+          "ask": "Which worked examples show the rules in action."
+        },
+        {
+          "key": "edge-cases",
+          "ask": "Which edge cases and conflicts between rules must be handled."
+        },
+        {
+          "key": "constants",
+          "ask": "Which numbers may be tuned after launch, and who tunes them."
+        },
+        {
+          "key": "admin",
+          "ask": "Which rules staff can change without a release."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "id": "sources",
+      "title": "Preserved sources",
+      "path": "docs/sources/SHA256SUMS",
+      "when": {
+        "flag": "source_documents"
+      },
+      "check": "sources",
+      "sections": [],
+      "areas": [],
+      "inputs": [
+        {
+          "key": "source-documents",
+          "title": "The source documents themselves",
+          "kind": "information"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "mirage",
+  "owner": {
+    "name": "lkntfnd",
+    "url": "https://github.com/lkntfnd"
+  },
+  "description": "Mirage: interview-driven project documentation and a local-first backlog that any coding agent can build from.",
+  "allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"],
+  "plugins": [
+    {
+      "name": "mirage",
+      "source": "./",
+      "description": "Interview the owner, generate the full documentation set a project needs, and plan milestones, epics, stories and tasks locally, with optional sync to Plane, Jira, GitHub Issues or Linear.",
+      "category": "development"
+    }
+  ]
+}
