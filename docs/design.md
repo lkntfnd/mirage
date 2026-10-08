@@ -25,7 +25,7 @@ Mirage writes into the project it documents. After a full run the project holds 
 README.md                  what the project is and where its documentation starts
 AGENTS.md                  agent operating rules, canonical for every agent
 CLAUDE.md                  one line, @AGENTS.md
-CONTEXT.md                 glossary, owned by domain-modeling
+GLOSSARY.md                glossary, owned by domain-modeling (CONTEXT.md with older versions of it)
 docs/
   README.md                generated index, reading order, open work
   questions.md             every question, recommendation and answer

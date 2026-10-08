@@ -192,6 +192,8 @@ class DocKind:
     sections: Tuple[Section, ...]
     areas: Tuple[Area, ...]
     inputs: Tuple[TypicalInput, ...]
+    # Older names for the same file, accepted when the project already has one.
+    alt_paths: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -569,6 +571,7 @@ def load_catalog(path: Path) -> Catalog:
                 sections=tuple(Section(s["key"], s["title"]) for s in doc["sections"]),
                 areas=tuple(Area(a["key"], a["ask"]) for a in doc["areas"]),
                 inputs=tuple(TypicalInput(i["key"], i["title"], i["kind"]) for i in doc["inputs"]),
+                alt_paths=tuple(doc.get("alt_paths", ())),
             )
             for doc in raw["docs"]
         )
@@ -701,14 +704,23 @@ PER_FORMS: Dict[str, Tuple[Callable[[object, Facets], List[Tuple[str, str]]], st
 }
 
 
-def make_plan(catalog: Catalog, facets: Facets) -> List[PlannedDoc]:
+def planned_path(root: Optional[Path], kind: DocKind) -> str:
+    """The kind's path, or an older name for it when only that file exists."""
+    if root is not None and not (root / kind.path).exists():
+        for alt in kind.alt_paths:
+            if (root / alt).exists():
+                return alt
+    return kind.path
+
+
+def make_plan(catalog: Catalog, facets: Facets, root: Optional[Path] = None) -> List[PlannedDoc]:
     plan: List[PlannedDoc] = []
     for kind in catalog.docs:
         form, arg = kind.when
         if form in SINGLE_FORMS:
             reason = SINGLE_FORMS[form](arg, facets)
             if reason:
-                plan.append(PlannedDoc(kind.id, kind, kind.path, reason))
+                plan.append(PlannedDoc(kind.id, kind, planned_path(root, kind), reason))
         elif form in PER_FORMS:
             expand, placeholder = PER_FORMS[form]
             for item, reason in expand(arg, facets):
@@ -949,7 +961,7 @@ def load_project(root: Path) -> Project:
     requirements, prd_areas = parse_prd(read_text(root / PRD_FILE))
     items, backlog_diagnostics = load_backlog(root)
     return Project(
-        root, catalog, facets, make_plan(catalog, facets), questions, inputs, requirements,
+        root, catalog, facets, make_plan(catalog, facets, root), questions, inputs, requirements,
         prd_areas, items, diagnostics + question_diagnostics + input_diagnostics + backlog_diagnostics,
     )
 
@@ -981,7 +993,7 @@ def scanned_files(root: Path) -> List[str]:
     backlog = root / BACKLOG_DIR
     if backlog.is_dir():
         candidates += list(backlog.glob("*.md"))
-    candidates += [root / name for name in ("AGENTS.md", "CONTEXT.md")]
+    candidates += [root / name for name in ("AGENTS.md", "GLOSSARY.md", "CONTEXT.md")]
     return sorted(p.relative_to(root).as_posix() for p in candidates if p.is_file() and not is_generated(p))
 
 
@@ -1054,7 +1066,8 @@ def rule_docs(project: Project) -> List[Diagnostic]:
         if text is None:
             out.append(Diagnostic(
                 doc.path, None, "doc-missing",
-                f"{doc.kind.title} ({doc.key}) is missing; it is planned because {doc.reason}",
+                f"{doc.kind.title} ({doc.key}) is missing; it is planned because {doc.reason}"
+                + "".join(f"; {alt} is accepted too" for alt in doc.kind.alt_paths),
             ))
         elif doc.kind.check == "sections":
             out += check_sections(doc.path, doc.key, doc.kind, text)

@@ -12,7 +12,7 @@ You interview the owner until every question area of every planned document is s
 Invoke the `grilling` skill and the `domain-modeling` skill with the Skill tool, both of them, before the first question. `grilling` is the engine behind `/grill-me`.
 
 - `grilling` sets the method: a design tree worked in rounds, the whole frontier asked each round, and a recommended answer on every question.
-- `domain-modeling` keeps `CONTEXT.md` and `docs/adr/` current as terms and hard-to-reverse decisions settle.
+- `domain-modeling` keeps the glossary and `docs/adr/` current as terms and hard-to-reverse decisions settle. The glossary is `GLOSSARY.md`, or `CONTEXT.md` with an older version of that skill. Use whichever name the installed skill writes, and never keep both.
 
 Everything below adds mirage's rules to theirs.
 

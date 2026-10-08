@@ -18,10 +18,10 @@ def make_upstream(root: Path, grilling_frontmatter: str = "name: grilling") -> N
     }
     for folder, fm in skills.values():
         (root / folder).mkdir(parents=True)
-        (root / folder / "SKILL.md").write_text(f"---\n{fm}\ndescription: x\n---\n\nbody\n")
+        (root / folder / "SKILL.md").write_text(f"---\n{fm}\ndescription: x\n---\n\nKeep `GLOSSARY.md` current.\n")
     dm = root / "skills/engineering/domain-modeling"
     (dm / "ADR-FORMAT.md").write_text("ADRs live in `docs/adr/` as `0001-slug.md`.\n")
-    (dm / "CONTEXT-FORMAT.md").write_text("format\n")
+    (dm / "GLOSSARY-FORMAT.md").write_text("format\n")
     (root / ".claude-plugin").mkdir()
     (root / ".claude-plugin" / "plugin.json").write_text(json.dumps(
         {"name": "mattpocock-skills", "skills": ["./" + f for f, _ in skills.values()]}))
@@ -44,6 +44,20 @@ class CheckUpstreamTest(unittest.TestCase):
             result = run(Path(tmp))
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout, "grilling: is now user-invoked only, so mirage skills cannot call it\n")
+
+    def test_a_renamed_glossary_file_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            make_upstream(Path(tmp))
+            dm = Path(tmp) / "skills/engineering/domain-modeling"
+            (dm / "GLOSSARY-FORMAT.md").rename(dm / "TERMS-FORMAT.md")
+            skill = dm / "SKILL.md"
+            skill.write_text(skill.read_text().replace("GLOSSARY.md", "TERMS.md"))
+            result = run(Path(tmp))
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout, (
+            "domain-modeling: GLOSSARY-FORMAT.md is missing\n"
+            "domain-modeling: SKILL.md no longer names GLOSSARY.md, the file mirage plans as the glossary\n"
+        ))
 
     def test_moved_adr_format_fails(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -53,7 +53,7 @@ Mirage writes every document and every backlog item as a file in your repository
 ## What it writes into your project
 
 ```
-README.md, AGENTS.md, CLAUDE.md, CONTEXT.md   entry points, agent rules and glossary
+README.md, AGENTS.md, CLAUDE.md, GLOSSARY.md  entry points, agent rules and glossary
 docs/summary.md                               one page for someone who reads nothing else
 docs/questions.md, docs/inputs.md             every decision, and everything still needed
 docs/prd.md, docs/*.md                        the documents your project needs
@@ -96,7 +96,7 @@ Run `/mirage` in your project. It sets up `.mirage/`, finds what already exists 
 
 ## Contributing
 
-- [CONTEXT.md](CONTEXT.md) holds the vocabulary.
+- [GLOSSARY.md](GLOSSARY.md) holds the vocabulary.
 - [docs/design.md](docs/design.md) covers the design, and [docs/adr/](docs/adr/) the decisions behind it.
 - [docs/validator.md](docs/validator.md) is the validator's contract.
 - [docs/catalog.md](docs/catalog.md) lists every document kind.

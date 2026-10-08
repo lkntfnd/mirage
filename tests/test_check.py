@@ -177,7 +177,7 @@ class ValidFixture(unittest.TestCase):
         docs = check.plan_entries(check.load_project(FIXTURE))
         self.assertEqual([(d["key"], d["path"], d["reason"]) for d in docs], [
             ("readme", "README.md", "always"),
-            ("glossary", "CONTEXT.md", "always"),
+            ("glossary", "GLOSSARY.md", "always"),
             ("index", "docs/README.md", "always"),
             ("summary", "docs/summary.md", "always"),
             ("questions", "docs/questions.md", "always"),
@@ -202,6 +202,34 @@ class ValidFixture(unittest.TestCase):
         ])
         self.assertTrue(all(d["exists"] for d in docs))
         self.assertTrue(all(a["covered"] for d in docs for a in d["areas"]))
+
+
+class GlossaryName(unittest.TestCase):
+    """domain-modeling wrote CONTEXT.md before it wrote GLOSSARY.md, and a project may hold either."""
+
+    def test_the_older_name_is_planned_when_only_it_exists(self):
+        with fixture_copy() as root:
+            (root / "GLOSSARY.md").rename(root / "CONTEXT.md")
+            run("index", "--root", root)
+            docs = {d["key"]: (d["path"], d["exists"]) for d in check.plan_entries(check.load_project(root))}
+            self.assertEqual(docs["glossary"], ("CONTEXT.md", True))
+            self.assertEqual(run("check", "--root", root), (0, "ok\n", ""))
+
+    def test_references_in_the_older_file_are_still_resolved(self):
+        with fixture_copy() as root:
+            (root / "GLOSSARY.md").rename(root / "CONTEXT.md")
+            append("CONTEXT.md", "See Q-404.\n")(root)
+            found = [(e["path"], e["code"], e["message"]) for e in errors(root, "--only", "refs")]
+        self.assertEqual(found, [("CONTEXT.md", "ref-missing", "Q-404 is not a question in docs/questions.md")])
+
+    def test_a_missing_glossary_names_both_files(self):
+        with fixture_copy() as root:
+            (root / "GLOSSARY.md").unlink()
+            found = [(e["path"], e["code"], e["message"]) for e in errors(root, "--only", "docs")]
+        self.assertEqual(found, [(
+            "GLOSSARY.md", "doc-missing",
+            "Glossary (glossary) is missing; it is planned because always; CONTEXT.md is accepted too",
+        )])
 
 
 class Mutations(unittest.TestCase):

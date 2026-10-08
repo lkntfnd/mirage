@@ -58,7 +58,7 @@
     {
       "id": "glossary",
       "title": "Glossary",
-      "path": "CONTEXT.md",
+      "path": "GLOSSARY.md",
       "when": "always",
       "check": "exists",
       "sections": [],
@@ -68,7 +68,10 @@
           "ask": "Which words the project uses for its core concepts, and which synonyms to avoid."
         }
       ],
-      "inputs": []
+      "inputs": [],
+      "alt_paths": [
+        "CONTEXT.md"
+      ]
     },
     {
       "id": "index",

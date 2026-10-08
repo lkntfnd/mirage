@@ -15,7 +15,7 @@ from pathlib import Path
 
 REQUIRED = {
     "grilling": {"model_invocable": True},
-    "domain-modeling": {"model_invocable": True, "files": ["ADR-FORMAT.md", "CONTEXT-FORMAT.md"]},
+    "domain-modeling": {"model_invocable": True, "files": ["ADR-FORMAT.md", "GLOSSARY-FORMAT.md"]},
     "to-questionnaire": {"model_invocable": False},
 }
 
@@ -64,6 +64,9 @@ def main() -> int:
         text = (adr_format / "ADR-FORMAT.md").read_text()
         if "docs/adr/" not in text or "0001-slug.md" not in text:
             failures.append("domain-modeling: ADR-FORMAT.md no longer names docs/adr/NNNN-slug.md")
+
+    if adr_format and (adr_format / "SKILL.md").is_file() and "GLOSSARY.md" not in (adr_format / "SKILL.md").read_text():
+        failures.append("domain-modeling: SKILL.md no longer names GLOSSARY.md, the file mirage plans as the glossary")
 
     if failures:
         print("\n".join(failures))

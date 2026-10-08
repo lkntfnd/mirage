@@ -15,7 +15,7 @@ The catalog holds 42 document kinds, 209 question areas and 43 typical inputs.
 | Document | Path | Included when | Sections | Areas | Inputs |
 |---|---|---|---|---|---|
 | Project README (`readme`) | `README.md` | always | 0 | 2 | 0 |
-| Glossary (`glossary`) | `CONTEXT.md` | always | 0 | 1 | 0 |
+| Glossary (`glossary`) | `GLOSSARY.md` | always | 0 | 1 | 0 |
 | Documentation index (`index`) | `docs/README.md` | always | 0 | 0 | 0 |
 | Executive summary (`summary`) | `docs/summary.md` | always | 5 | 0 | 0 |
 | Question register (`questions`) | `docs/questions.md` | always | 0 | 0 | 0 |

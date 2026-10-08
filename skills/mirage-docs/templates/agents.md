@@ -6,7 +6,7 @@
 <!-- mirage:section read-first -->
 ## Read first
 
-{{List the read-first order: this file, then CONTEXT.md for the project's vocabulary, then docs/README.md for the reading order, then docs/delivery.md for how work is written, tracked and finished, then docs/prd.md for the requirements, then docs/questions.md for settled and open decisions. Add any other document a new contributor must read before touching code, such as docs/architecture.md.}}
+{{List the read-first order: this file, then the glossary for the project's vocabulary, at the path `check.py plan` gives for it (GLOSSARY.md, or CONTEXT.md in an older project), then docs/README.md for the reading order, then docs/delivery.md for how work is written, tracked and finished, then docs/prd.md for the requirements, then docs/questions.md for settled and open decisions. Add any other document a new contributor must read before touching code, such as docs/architecture.md.}}
 
 <!-- mirage:section authority -->
 ## Scope and authority

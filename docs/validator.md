@@ -32,7 +32,7 @@
 | `docs/questions.md` | Question register. |
 | `docs/inputs.md` | Inputs register. |
 | `docs/prd.md` | Requirements and requirement areas. |
-| `docs/**/*.md`, `AGENTS.md`, `CLAUDE.md`, `CONTEXT.md` | Documents. |
+| `docs/**/*.md`, `AGENTS.md`, `CLAUDE.md`, `GLOSSARY.md` or `CONTEXT.md` | Documents. |
 | `docs/adr/NNNN-slug.md` | Decision records. |
 | `docs/sources/` | Preserved sources and `SHA256SUMS`. |
 | `backlog/*.md` | Backlog items and the generated `backlog/README.md`. |
@@ -68,6 +68,8 @@
 ## 3. Catalog and plan
 
 Each catalog entry has `id`, `title`, `path`, `when`, `check`, `sections`, `areas` and `inputs`. The plan is the list of document instances the project requires.
+
+An entry may also carry `alt_paths`, a list of older names for the same file. When `path` does not exist and one of them does, the instance's path is that older name. The glossary uses this: `domain-modeling` writes `GLOSSARY.md`, and wrote `CONTEXT.md` before 2026-09. When neither exists, `doc-missing` names `path` and says which older names are accepted.
 
 `when` forms:
 
@@ -259,7 +261,7 @@ Status rules:
 
 Group details:
 
-- **refs.** Scan every scanned file outside fenced code blocks for `REQ-…`, `Q-\d{3}`, `IN-\d{3}`, `ADR-\d{4}` and story or task IDs. Each must exist: a requirement in the PRD, a question in the register, an input in the inputs register, a file `docs/adr/NNNN-*.md`, or a backlog file. The scanned files are `docs/**/*.md` except `docs/sources/**`, `backlog/*.md`, `AGENTS.md` and `CONTEXT.md`. Generated files are not scanned by any group, because every ID they hold is checked at its source.
+- **refs.** Scan every scanned file outside fenced code blocks for `REQ-…`, `Q-\d{3}`, `IN-\d{3}`, `ADR-\d{4}` and story or task IDs. Each must exist: a requirement in the PRD, a question in the register, an input in the inputs register, a file `docs/adr/NNNN-*.md`, or a backlog file. The scanned files are `docs/**/*.md` except `docs/sources/**`, `backlog/*.md`, `AGENTS.md`, `GLOSSARY.md` and `CONTEXT.md`. Generated files are not scanned by any group, because every ID they hold is checked at its source.
 - **adr-duplicate.** Two files in `docs/adr/` share the same `NNNN` number.
 - **coverage-req.** Every requirement whose scope is not OUT is listed in the `req` of at least one story that is not cancelled and whose release is the same as or earlier than the requirement's.
 - **coverage-area.** Every area of every planned document is named in the `Covers` of at least one question, whatever its status.
