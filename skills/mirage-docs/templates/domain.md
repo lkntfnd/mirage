@@ -21,7 +21,7 @@
 <!-- mirage:section constants -->
 ## Tunable values
 
-{{List every number in the rules above that can change after launch without a code change, and who owns changing it. Mark each value's status as hypothesis until a release has measured it, or as measured once one has.}}
+{{List every number in the rules above that can change after launch without a code change, and who owns changing it. Mark each value's status as "decided" with its question, as (Q-nnn), when the owner set it, as "hypothesis" when it is a starting guess that no release has measured, or as "measured" once one has.}}
 
 | Name | Value | Unit | Owner | Status |
 |---|---|---|---|---|

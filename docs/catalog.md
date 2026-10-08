@@ -2,27 +2,30 @@
 
 Generated from `skills/mirage/scripts/catalog.json` by `scripts/render_catalog.py`. Edit the JSON, then rerun the script.
 
-The catalog holds 37 document kinds, 198 question areas and 43 typical inputs.
+The catalog holds 42 document kinds, 209 question areas and 43 typical inputs.
 
 ## Facets
 
 - Component kinds: `website`, `web-app`, `mobile-app`, `desktop-app`, `browser-extension`, `backend-service`, `cli`, `library`, `data-pipeline`, `embedded`, `game`.
-- Flags: `accounts`, `personal_data`, `payments`, `cms`, `i18n`, `analytics`, `notifications`, `search`, `offline`, `realtime`, `ai`, `admin`, `migration`, `source_documents`.
+- Flags: `accounts`, `personal_data`, `payments`, `cms`, `i18n`, `analytics`, `notifications`, `search`, `offline`, `realtime`, `ai`, `admin`, `migration`, `file_formats`, `source_documents`.
 - Lists: `integrations`, `regulated`, `domain_topics`.
 
 ## Documents
 
 | Document | Path | Included when | Sections | Areas | Inputs |
 |---|---|---|---|---|---|
+| Project README (`readme`) | `README.md` | always | 0 | 2 | 0 |
 | Glossary (`glossary`) | `CONTEXT.md` | always | 0 | 1 | 0 |
+| Documentation index (`index`) | `docs/README.md` | always | 0 | 0 | 0 |
+| Executive summary (`summary`) | `docs/summary.md` | always | 5 | 0 | 0 |
 | Question register (`questions`) | `docs/questions.md` | always | 0 | 0 | 0 |
 | Inputs register (`inputs`) | `docs/inputs.md` | always | 0 | 0 | 0 |
-| Documentation index (`index`) | `docs/README.md` | always | 0 | 0 | 0 |
 | Product requirements (`prd`) | `docs/prd.md` | always | 7 | 8 | 1 |
 | Architecture (`architecture`) | `docs/architecture.md` | always | 6 | 7 | 2 |
 | Security (`security`) | `docs/security.md` | always | 6 | 7 | 1 |
-| Test strategy (`test-strategy`) | `docs/test-strategy.md` | always | 6 | 6 | 1 |
-| Operations (`operations`) | `docs/operations.md` | always | 7 | 9 | 4 |
+| Test strategy (`test-strategy`) | `docs/test-strategy.md` | always | 5 | 6 | 1 |
+| Operations (`operations`) | `docs/operations.md` | always | 8 | 10 | 4 |
+| Delivery conventions (`delivery`) | `docs/delivery.md` | always | 9 | 4 | 0 |
 | Agent rules (`agents`) | `AGENTS.md` | always | 7 | 5 | 0 |
 | User experience (`ux`) | `docs/ux.md` | a component of kind website, web-app, mobile-app, desktop-app, browser-extension, game | 7 | 8 | 2 |
 | Screen or page spec (`screen`) | `docs/specs/{component}/{name}.md` | one per screen or page listed in `ux` | 10 | 0 | 0 |
@@ -32,6 +35,7 @@ The catalog holds 37 document kinds, 198 question areas and 43 typical inputs.
 | Search engine optimization (`seo`) | `docs/seo.md` | a component of kind website | 6 | 7 | 2 |
 | API (`api`) | `docs/api.md` | a component of kind backend-service | 10 | 8 | 0 |
 | Data model (`data-model`) | `docs/data-model.md` | a component of kind backend-service, data-pipeline or flag `accounts` | 5 | 5 | 1 |
+| File and data formats (`formats`) | `docs/formats.md` | flag `file_formats` | 5 | 4 | 0 |
 | Command-line interface (`cli`) | `docs/cli.md` | a component of kind cli | 6 | 6 | 0 |
 | Public API (`public-api`) | `docs/public-api.md` | a component of kind library | 6 | 6 | 0 |
 | Platform (`platform`) | `docs/platforms/{kind}.md` | one per component kind among mobile-app, desktop-app, browser-extension, embedded, game | 6 | 7 | 3 |
@@ -51,8 +55,14 @@ The catalog holds 37 document kinds, 198 question areas and 43 typical inputs.
 | Migration (`migration`) | `docs/migration.md` | flag `migration` | 5 | 5 | 2 |
 | Domain rules (`domain`) | `docs/domain/{item}.md` | one per entry in `domain_topics` | 6 | 5 | 0 |
 | Preserved sources (`sources`) | `docs/sources/SHA256SUMS` | flag `source_documents` | 0 | 0 | 1 |
+| Audit log (`audit-log`) | `docs/audit-log.md` | always | 0 | 0 | 0 |
 
 ## Question areas
+
+### Project README (`readme`)
+
+- `license`: Whether the source is public or private, under which license it is released, and who holds the copyright.
+- `contributing`: Whether outside contributions are accepted, how bugs are reported, and how a security problem is reported privately.
 
 ### Glossary (`glossary`)
 
@@ -117,8 +127,16 @@ Typical inputs: Test devices or device-cloud access (tool).
 - `domains`: Which domains exist, who controls DNS, and how certificates renew.
 - `support`: How users report problems, and who handles them.
 - `costs`: What the running costs may be, and who pays them.
+- `launch`: What must be true before the public launch, and who signs it off.
 
 Typical inputs: CI service account (account); Hosting and deployment access (access); Domain registrar and DNS access (access); Error tracking account (account).
+
+### Delivery conventions (`delivery`)
+
+- `done`: What done means beyond passing checks, such as review, deployment to a test environment, verification on real devices or in every language, and updated documents.
+- `tracker`: Which tracker shows the backlog as a board, and in which project, or that the project uses none.
+- `estimates`: Whether work is estimated, in which unit, and who supplies the estimates.
+- `agreements`: How much work one lane has in progress at once, how bugs are filed, how long a spike may run, and when work may move between milestones.
 
 ### Agent rules (`agents`)
 
@@ -202,6 +220,13 @@ Typical inputs: Search console access (access); List of existing URLs (informati
 - `migrations`: How schema changes are applied and rolled back.
 
 Typical inputs: Access to existing data (access).
+
+### File and data formats (`formats`)
+
+- `formats`: Which files or payloads the product reads and writes, and who else consumes them.
+- `schema`: Which fields each format has, with types and which are required.
+- `versioning`: How a format changes without breaking files that already exist.
+- `validation`: What happens when an input is malformed or carries unknown fields.
 
 ### Command-line interface (`cli`)
 

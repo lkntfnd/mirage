@@ -21,11 +21,6 @@ Staging uses synthetic customers only; production data is never copied.
 
 Scenario IDs run from T-BOOK-01 upward, one range per requirement area.
 
-<!-- mirage:section done -->
-## Definition of done
-
-A story is done when its checklist is ticked and CI is green on the merged commit.
-
 <!-- mirage:section evidence -->
 ## Evidence
 

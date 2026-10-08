@@ -1,6 +1,22 @@
 {
-  "components": ["cli"],
-  "flags_true": [],
+  "components": [
+    "cli"
+  ],
+  "flags_true": [
+    "file_formats"
+  ],
   "integrations_include": [],
-  "docs_include": ["cli", "prd", "architecture", "test-strategy", "operations", "agents"]
+  "docs_include": [
+    "cli",
+    "prd",
+    "architecture",
+    "test-strategy",
+    "operations",
+    "agents",
+    "readme",
+    "summary",
+    "delivery",
+    "audit-log",
+    "formats"
+  ]
 }

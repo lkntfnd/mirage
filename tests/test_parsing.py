@@ -90,7 +90,7 @@ class Registers(unittest.TestCase):
         with fixture_copy() as root:
             append("docs/questions.md", "\n### Q-12 Which bell?\n\n- Status: open\n")(root)
             self.assertEqual(found(root, "--only", "register"), [
-                ("docs/questions.md", 91, "register-parse", "heading must read `### Q-nnn <title>`"),
+                ("docs/questions.md", 98, "register-parse", "heading must read `### Q-nnn <title>`"),
             ])
 
     def test_answered_question_needs_an_answer_and_status_is_required(self):

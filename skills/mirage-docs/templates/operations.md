@@ -45,3 +45,10 @@
 ## Support
 
 {{One paragraph: how users report a problem, who triages it, and what the running costs are expected to be and who pays them. Mark an unconfirmed cost figure as a hypothesis until an actual bill confirms it, and record who pays as a question in docs/questions.md as (Q-nnn) if that is undecided.}}
+
+<!-- mirage:section launch -->
+## Launch checklist
+
+{{List what must be true before the public launch, one checkable line each: the requirements of the launch release are done, monitoring and alerts are live, backups have been restored once as a test, legal pages and store listings are approved where they apply, and the rollback path has been exercised. Name who signs the launch off, citing the question that decided it. A launch date appears only when the owner set one.}}
+
+- [ ] {{Launch condition}}

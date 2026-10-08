@@ -22,4 +22,4 @@ What the documentation and the build need from outside the conversation.
 - Status: not-needed
 - Kind: asset
 - Needed for: design-system
-- How to get: The v1.0 app uses a text wordmark instead.
+- Reason: The v1.0 app uses a text wordmark instead.

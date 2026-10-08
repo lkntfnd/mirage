@@ -31,7 +31,7 @@
 <!-- mirage:section data -->
 ## Data
 
-{{List the endpoints this screen calls, from docs/api.md's endpoint inventory, or the data source it reads when the project has no API, from docs/data-model.md. Name what each call returns and when it runs, such as on load or on a user action.}}
+{{List the endpoints this screen calls, from docs/api.md's endpoint inventory. When the project has no API, name the data source it reads instead, from docs/data-model.md or docs/content.md, whichever the project has. Name what each call or source returns and when it is read, such as on load or on a user action.}}
 
 <!-- mirage:section events -->
 ## Analytics events

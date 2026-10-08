@@ -25,7 +25,7 @@ Status: draft.
 
 | ID | Title | Status | Lane | Blockers |
 |---|---|---|---|---|
-| M2-E01-S01 | Booking reminders | blocked | mobile | - |
+| M2-E01-S01 | Booking reminders | blocked | mobile | Q-012, IN-002 |
 | M2-E01-S02 | Move a booking to another slot | draft | mobile | - |
 
 ## Epics

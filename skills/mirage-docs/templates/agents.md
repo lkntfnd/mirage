@@ -6,7 +6,7 @@
 <!-- mirage:section read-first -->
 ## Read first
 
-{{List the read-first order: this file, then CONTEXT.md for the project's vocabulary, then docs/README.md for the reading order, then docs/prd.md for the requirements, then docs/questions.md for settled and open decisions. Add any other document a new contributor must read before touching code, such as docs/architecture.md.}}
+{{List the read-first order: this file, then CONTEXT.md for the project's vocabulary, then docs/README.md for the reading order, then docs/delivery.md for how work is written, tracked and finished, then docs/prd.md for the requirements, then docs/questions.md for settled and open decisions. Add any other document a new contributor must read before touching code, such as docs/architecture.md.}}
 
 <!-- mirage:section authority -->
 ## Scope and authority
@@ -24,10 +24,12 @@
 
 {{State that an item carrying more than one area label names its owning lane, that no lane edits another lane's paths, and the one exception this project allows, if any, such as a shared CI file edited only in a pull request that touches nothing else in it.}}
 
+{{State how one lane asks another for something, as docs/delivery.md defines it: the requesting lane writes a draft backlog item with the other lane's area label, stating the exact shape it needs and how it will verify it, and adds that item to its own `blocked_by`. Name the contract file between the lanes, such as the API contract, and who may change it.}}
+
 <!-- mirage:section workflow -->
 ## Picking and finishing work
 
-{{Instruct the agent to run `python3 .mirage/check.py ready`, pick only items in its own lane, read the story's acceptance criteria, requirement links and blockers before starting, move status only with `python3 .mirage/check.py set-status <ID> <STATUS>`, reach done only with a commit SHA and its CI run as evidence, and run the ready check again at the end of every session.}}
+{{Instruct the agent to run `python3 .mirage/check.py ready`, pick only items in its own lane, read the item's context, acceptance criteria, verification and blockers before starting, move status only with `python3 .mirage/check.py set-status <ID> <STATUS>`, reach done only with a commit SHA and its CI run as evidence, and run the ready check again at the end of every session. State that the files in backlog/ are the plan, that the tracker named in docs/delivery.md is only a board, and that an agent never edits the tracker by hand.}}
 
 <!-- mirage:section conventions -->
 ## Branches, commits and pull requests

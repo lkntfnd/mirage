@@ -1,6 +1,33 @@
 {
-  "components": ["mobile-app", "backend-service", "web-app"],
-  "flags_true": ["accounts", "personal_data", "payments", "notifications", "admin"],
-  "integrations_include": ["stripe"],
-  "docs_include": ["ux", "api", "data-model", "auth", "privacy", "payments", "notifications", "admin", "platform:mobile-app", "integration:stripe"]
+  "components": [
+    "mobile-app",
+    "backend-service",
+    "web-app"
+  ],
+  "flags_true": [
+    "accounts",
+    "personal_data",
+    "payments",
+    "notifications",
+    "admin"
+  ],
+  "integrations_include": [
+    "stripe"
+  ],
+  "docs_include": [
+    "ux",
+    "api",
+    "data-model",
+    "auth",
+    "privacy",
+    "payments",
+    "notifications",
+    "admin",
+    "platform:mobile-app",
+    "integration:stripe",
+    "readme",
+    "summary",
+    "delivery",
+    "audit-log"
+  ]
 }

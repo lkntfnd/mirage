@@ -20,11 +20,11 @@
 <!-- mirage:section controls -->
 ## Controls
 
-{{One row per control that closes a threat above, plus a statement of how access is decided for each role and resource from docs/prd.md's roles. State the control that exists today, never one merely planned, and mark a gap as a question in docs/questions.md as (Q-nnn).}}
+{{One row per control that closes a threat above, plus a statement of how access is decided for each role and resource from docs/prd.md's roles. Status is "in place" when the code or configuration has the control today, or "planned" with the decision that requires it, as (Q-nnn) or ADR-NNNN. Never describe a planned control as if it existed. Mark a threat with no control as a question in docs/questions.md, as (Q-nnn).}}
 
-| Threat | Control | Owner |
-|---|---|---|
-| {{Threat from the table above}} | {{What stops or limits it}} | {{Role or person responsible}} |
+| Threat | Control | Status | Owner |
+|---|---|---|---|
+| {{Threat from the table above}} | {{What stops or limits it}} | {{in place, or planned (Q-nnn)}} | {{Role or person responsible}} |
 
 <!-- mirage:section secrets -->
 ## Secrets management

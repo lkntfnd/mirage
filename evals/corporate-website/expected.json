@@ -1,6 +1,30 @@
 {
-  "components": ["website"],
-  "flags_true": ["cms", "i18n", "analytics", "personal_data", "migration"],
-  "integrations_include": ["hubspot"],
-  "docs_include": ["ux", "content", "seo", "design-system", "privacy", "i18n", "events", "migration", "integration:hubspot"]
+  "components": [
+    "website"
+  ],
+  "flags_true": [
+    "cms",
+    "i18n",
+    "analytics",
+    "personal_data",
+    "migration"
+  ],
+  "integrations_include": [
+    "hubspot"
+  ],
+  "docs_include": [
+    "ux",
+    "content",
+    "seo",
+    "design-system",
+    "privacy",
+    "i18n",
+    "events",
+    "migration",
+    "integration:hubspot",
+    "readme",
+    "summary",
+    "delivery",
+    "audit-log"
+  ]
 }

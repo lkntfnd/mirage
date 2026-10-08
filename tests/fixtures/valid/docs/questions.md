@@ -33,7 +33,7 @@ Every question the owner decides, with a recommendation and a status.
 ### Q-005 How is the product deployed and operated?
 
 - Status: answered
-- Covers: operations/ci, operations/deploy, operations/cadence, operations/rollback, operations/monitoring, operations/backups, operations/domains, operations/support, operations/costs
+- Covers: operations/ci, operations/deploy, operations/cadence, operations/rollback, operations/monitoring, operations/backups, operations/domains, operations/support, operations/costs, operations/launch
 - Recommendation: Deploy staging on merge and production on a tag.
 - Answer: As recommended. Answered on 2026-09-21.
 
@@ -87,3 +87,10 @@ Every question the owner decides, with a recommendation and a status.
 - Covers: notifications/channels, notifications/triggers, notifications/templates, notifications/preferences, notifications/caps, notifications/provider
 - Blocks: M2-E01-S01, REQ-NOTE-001
 - Recommendation: One push reminder the day before the booking.
+
+### Q-013 How is work tracked and finished?
+
+- Status: answered
+- Covers: delivery/done, delivery/tracker, delivery/estimates, delivery/agreements, readme/license, readme/contributing
+- Recommendation: Keep the backlog files as the only board, estimate in points, and verify booking screens on one phone per platform.
+- Answer: As recommended. Answered on 2026-09-24.

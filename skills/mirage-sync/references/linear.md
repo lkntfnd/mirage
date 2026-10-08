@@ -1,5 +1,15 @@
 # Linear adapter
 
+## Contents
+
+- [What to use](#what-to-use)
+- [Capability detection](#capability-detection)
+- [Mapping](#mapping)
+- [Status mapping](#status-mapping)
+- [Executing each op kind](#executing-each-op-kind)
+- [Pulling status back](#pulling-status-back)
+- [Limits and gotchas](#limits-and-gotchas)
+
 ## What to use
 
 Linear publishes an official, centrally hosted MCP server at `https://mcp.linear.app/mcp`, with a read-only variant at `https://mcp.linear.app/mcp/readonly`, documented at [linear.app/docs/mcp](https://linear.app/docs/mcp). Connect an MCP client there first. It authenticates through OAuth 2.1 with dynamic client registration, or through a bearer token or a personal API key passed directly (same page). Its own docs describe its tools only loosely, as ones "for finding, creating, and updating objects in Linear like issues, projects, and comments... with more functionality on the way" (same page), and name no tool for project milestones, issue relations or labels. Use its issue, project and comment tools when they cover an operation, and fall back to the GraphQL API below for project milestones, issue relations and labels until the tool list documents them.
@@ -32,9 +42,9 @@ Run each check once before the first write.
 | story | an issue |
 | task | a sub-issue of the story's issue |
 | blocked_by | an issue relation of type `blocks`, from the blocker to the blocked issue |
-| `area:*` labels | workspace-level labels, same name |
+| labels (`area:*`, `type:*`, `scope:*`, `release:*`) | workspace-level labels, same name |
 
-This confirms `docs/design.md` section 9 rather than changing it, with one refinement worth stating. A project milestone belongs to exactly one project; asked whether one can be shared across projects, Linear's docs answer "this isn't currently possible, you will need to recreate milestones in each individual project" ([linear.app/docs/project-milestones](https://linear.app/docs/project-milestones)). Mirage epics span milestones (`docs/adr/0007-milestone-first-backlog-ids.md`), so one mirage milestone realizes as a separate project milestone inside every epic's project that has stories in it, never as a single Linear object. Treat a milestone-level `create` or `update` op as satisfied once at least one such project milestone exists for it. Do not expect the map's one `remote_id` to name all of them; create the rest lazily the first time a story of that epic and milestone is pushed, and record only the first with `sync-record`.
+One point needs care. A project milestone belongs to exactly one project; asked whether one can be shared across projects, Linear's docs answer "this isn't currently possible, you will need to recreate milestones in each individual project" ([linear.app/docs/project-milestones](https://linear.app/docs/project-milestones)). A mirage epic's stories can sit in several milestones, so one mirage milestone realizes as a separate project milestone inside every epic's project that has stories in it, never as a single Linear object. Treat a milestone-level `create` or `update` op as satisfied once at least one such project milestone exists for it. Do not expect the map's one `remote_id` to name all of them; create the rest lazily the first time a story of that epic and milestone is pushed, and record only the first with `sync-record`.
 
 Create `area:*` labels at the workspace level, not per team, so a shared project reads the same label on every team it touches; Linear's labels can be workspace-wide or team-only ([linear.app/docs/labels](https://linear.app/docs/labels)). Never put them in a Linear label group, because only one label from a group can sit on an issue at a time (same page), which would break a story carrying more than one area.
 
@@ -49,7 +59,9 @@ Mirage never sends `priority: 0`, which means no priority. 1, 2 and 4 come from 
 
 Send a mirage estimate straight through as the issue's `estimate`, once the capability check confirms the team's scale is Fibonacci; mirage's 1, 2, 3, 5, 8 is that scale exactly ([linear.app/docs/estimates](https://linear.app/docs/estimates)).
 
-Write the issue's description exactly as the op's `body` field gives it, the Markdown body followed by a blank line and `mirage-id: <ID>`. Add nothing around that line. When the map has no entry for an ID, search before creating, with an `issues` query filtered on `description: { contains: "mirage-id: <ID>" } }`; `contains` is a documented string comparator ([linear.app/developers/filtering](https://linear.app/developers/filtering)). Record whatever it finds with `sync-record` before creating anything.
+Write the issue's description exactly as the op's `body` field gives it. It is the Markdown body followed by a footer whose last line is `mirage-id: <ID>`. Add or strip nothing. When the map has no entry for an ID, search before creating, with an `issues` query filtered on `description: { contains: "mirage-id: <ID>" } }`; `contains` is a documented string comparator ([linear.app/developers/filtering](https://linear.app/developers/filtering)). Record whatever it finds with `sync-record` before creating anything.
+
+The operation's `labels` list is complete. It holds the item's `area:*` labels and, for stories and tasks, `type:*`, `scope:*` and `release:*` labels. Create and apply every label in the list the same way as the area labels. The operation's `title` already starts with the backlog ID, so write it unchanged.
 
 ## Status mapping
 
@@ -93,7 +105,7 @@ For every mapped item, read the issue's current workflow state and map its name 
 
 Before setting `done`, look for evidence. Read the issue's attachments; Linear's GitHub integration links a pull request to an issue as one ([linear.app/developers/attachments](https://linear.app/developers/attachments)). When a pull request or commit link is present, run `set-status ID done --evidence "<the URL>"`. When none is present, run `set-status ID in-review` instead and tell the owner which items are missing evidence. A Linear state named Done is never evidence by itself.
 
-Never read a title, a label, a project or a parent back from Linear. Status is the only field the tracker owns; the rest is drift the next push overwrites (`docs/adr/0008-area-labels-are-lanes.md`).
+Never copy a title, a label, a project or a parent from Linear into the files. Status is the only field that comes back. Read the other fields only to find drift for the sync skill's drift step, which compares them with `python3 .mirage/check.py sync-expect linear`.
 
 ## Limits and gotchas
 

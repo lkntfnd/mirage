@@ -11,11 +11,11 @@
 <!-- mirage:section inventory -->
 ## Screen inventory
 
-{{List one row per screen or page in this release. Loading, Empty, Error and Offline mark whether that state needs its own design, yes or no. Link marks whether the screen opens from a deep link or a notification, yes or no. Spec links to the screen's file once it is written. Release names the release that ships it.}}
+{{List one row per screen or page in this release. Loading, Empty, Error and Offline mark whether that state needs its own design, yes or no. Link marks whether the screen opens from a deep link or a notification, yes or no. Spec is a Markdown link to the screen's file, relative to this document, so the validator reports a spec that is missing. Release names the release that ships it.}}
 
 | ID | Screen | Entry points | Loading | Empty | Error | Offline | Link | Spec | Release |
 |---|---|---|---|---|---|---|---|---|---|
-| {{SCR-001}} | {{Screen name}} | {{How a user reaches it}} | {{yes/no}} | {{yes/no}} | {{yes/no}} | {{yes/no}} | {{yes/no}} | {{docs/specs/.../name.md}} | {{v1.0}} |
+| {{SCR-001}} | {{Screen name}} | {{How a user reaches it}} | {{yes/no}} | {{yes/no}} | {{yes/no}} | {{yes/no}} | {{yes/no}} | {{[Name](specs/<component id>/<Name>.md)}} | {{v1.0}} |
 
 <!-- mirage:section flows -->
 ## Flows

@@ -64,6 +64,10 @@ _Avoid_: master backlog
 A copy of the canonical backlog in a tracker such as Plane or Jira, kept for people who prefer a board view.
 _Avoid_: mirror, sync target, tracker backlog
 
+**Drift**:
+A change a person made to a tracker item's title, description, labels or parent that the backlog files do not hold. Mirage reports it before pushing.
+_Avoid_: conflict, out-of-sync
+
 **Adapter**:
 The instructions that map backlog items onto one tracker's objects and statuses.
 _Avoid_: connector, integration

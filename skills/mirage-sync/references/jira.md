@@ -1,5 +1,15 @@
 # Jira adapter
 
+## Contents
+
+- [What to use](#what-to-use)
+- [Capability detection](#capability-detection)
+- [Mapping](#mapping)
+- [Status mapping](#status-mapping)
+- [Executing each op kind](#executing-each-op-kind)
+- [Pulling status back](#pulling-status-back)
+- [Limits and gotchas](#limits-and-gotchas)
+
 ## What to use
 
 Use the official Atlassian Remote MCP Server first, at `https://mcp.atlassian.com/v2/mcp`, connected over OAuth 2.1 or an API token ([github.com/atlassian/atlassian-mcp-server](https://github.com/atlassian/atlassian-mcp-server)). It exposes typed Jira tools, listed on the [supported tools page](https://support.atlassian.com/atlassian-rovo-mcp-server/docs/supported-tools/): `createJiraIssue`, `editJiraIssue`, `transitionJiraIssue`, `listJiraIssueTransitions`, `searchJiraIssuesUsingJql`, `getJiraIssue`, `createJiraIssueLink`, `listJiraIssueLinkTypes`, `listJiraProjects`, `getJiraIssueTypeMetaWithFields` and `getJiraProjectVersions`. `deleteJiraIssue` exists but needs admin enablement, and mirage never deletes a Jira item.
@@ -37,7 +47,7 @@ Unverified: the exact custom field name for story points. Jira ships no single F
 | priority | the project's priority scheme |
 | estimate | the story points field |
 
-A story or task nests under its parent through the `parent` field, not the legacy Epic Link field. Atlassian is replacing Epic Link and Parent Link with `parent` everywhere, and team-managed projects never had Epic Link ([support.atlassian.com](https://support.atlassian.com/jira-software-cloud/docs/upcoming-changes-epic-link-replaced-with-parent/)). An epic itself carries no fix version, because one mirage epic can span several milestones (ADR 0007). Only its stories and tasks carry one.
+A story or task nests under its parent through the `parent` field, not the legacy Epic Link field. Atlassian is replacing Epic Link and Parent Link with `parent` everywhere, and team-managed projects never had Epic Link ([support.atlassian.com](https://support.atlassian.com/jira-software-cloud/docs/upcoming-changes-epic-link-replaced-with-parent/)). An epic itself carries no fix version, because one mirage epic can span several milestones. Only its stories and tasks carry one.
 
 Map each `area:<name>` label straight across. Jira labels cannot contain spaces ([support.atlassian.com](https://support.atlassian.com/jira/kb/how-to-create-and-use-labels-in-jira-cloud/)), and mirage's labels never do either.
 
@@ -46,6 +56,8 @@ Map priority against the project's own scheme, whose default is Highest, High, M
 Build an issue's description as Atlassian Document Format, one paragraph per blank-line-separated block of the body, each holding a single text node with that block's plain text ([atlassian.com/blog](https://www.atlassian.com/blog/development/creating-a-jira-cloud-issue-in-a-single-rest-call)). End with a paragraph containing exactly `mirage-id: <ID>`. A fix version has no ADF description, only a plain string ([developer.atlassian.com](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/)), so put the marker line at the end of that string instead.
 
 To find an item the map does not list, search issues with the JQL `description ~ "mirage-id: <ID>"`. The `~` operator runs a full text match on the description field rather than an exact substring match ([support.atlassian.com](https://support.atlassian.com/jira-software-cloud/docs/jql-operators/)). JQL does not index fix versions, so find an unmapped milestone by listing the project's versions with `getJiraProjectVersions` and reading each description directly.
+
+The operation's `labels` list is complete. It holds the item's `area:*` labels and, for stories and tasks, `type:*`, `scope:*` and `release:*` labels. Create and apply every label in the list the same way as the area labels. The operation's `title` already starts with the backlog ID, so write it unchanged.
 
 ## Status mapping
 
@@ -88,7 +100,7 @@ For every mapped item, read its current status with `getJiraIssue` or `listJiraI
 ```
 python3 .mirage/check.py set-status ID STATUS [--evidence TEXT]
 ```
-Never read back title, labels or hierarchy. The governance rule treats those as drift, overwritten on the next push (ADR 0008).
+Never copy a title, labels or hierarchy from Jira into the files. Status is the only field that comes back. Read the other fields only to find drift for the sync skill's drift step, which compares them with `python3 .mirage/check.py sync-expect jira`.
 
 A Jira "Done" is not evidence by itself. Open the issue's development panel for a linked pull request or commit, or look for a smart-commit reference. When one exists, pass it as `--evidence`. When none exists, set `in-review` instead and tell the owner which items are missing evidence. Never invent it.
 

@@ -27,6 +27,7 @@
     "ai",
     "admin",
     "migration",
+    "file_formats",
     "source_documents"
   ],
   "lists": [
@@ -35,6 +36,25 @@
     "domain_topics"
   ],
   "docs": [
+    {
+      "id": "readme",
+      "title": "Project README",
+      "path": "README.md",
+      "when": "always",
+      "check": "exists",
+      "sections": [],
+      "areas": [
+        {
+          "key": "license",
+          "ask": "Whether the source is public or private, under which license it is released, and who holds the copyright."
+        },
+        {
+          "key": "contributing",
+          "ask": "Whether outside contributions are accepted, how bugs are reported, and how a security problem is reported privately."
+        }
+      ],
+      "inputs": []
+    },
     {
       "id": "glossary",
       "title": "Glossary",
@@ -48,6 +68,47 @@
           "ask": "Which words the project uses for its core concepts, and which synonyms to avoid."
         }
       ],
+      "inputs": []
+    },
+    {
+      "id": "index",
+      "title": "Documentation index",
+      "path": "docs/README.md",
+      "when": "always",
+      "check": "generated",
+      "sections": [],
+      "areas": [],
+      "inputs": []
+    },
+    {
+      "id": "summary",
+      "title": "Executive summary",
+      "path": "docs/summary.md",
+      "when": "always",
+      "check": "sections",
+      "sections": [
+        {
+          "key": "product",
+          "title": "What is being built"
+        },
+        {
+          "key": "scope",
+          "title": "Scope and releases"
+        },
+        {
+          "key": "decisions",
+          "title": "Decisions still open"
+        },
+        {
+          "key": "delivery",
+          "title": "Delivery status"
+        },
+        {
+          "key": "next",
+          "title": "Next steps"
+        }
+      ],
+      "areas": [],
       "inputs": []
     },
     {
@@ -66,16 +127,6 @@
       "path": "docs/inputs.md",
       "when": "always",
       "check": "register",
-      "sections": [],
-      "areas": [],
-      "inputs": []
-    },
-    {
-      "id": "index",
-      "title": "Documentation index",
-      "path": "docs/README.md",
-      "when": "always",
-      "check": "generated",
       "sections": [],
       "areas": [],
       "inputs": []
@@ -327,10 +378,6 @@
           "title": "Scenario IDs"
         },
         {
-          "key": "done",
-          "title": "Definition of done"
-        },
-        {
           "key": "evidence",
           "title": "Evidence"
         }
@@ -403,6 +450,10 @@
         {
           "key": "support",
           "title": "Support"
+        },
+        {
+          "key": "launch",
+          "title": "Launch checklist"
         }
       ],
       "areas": [
@@ -441,6 +492,10 @@
         {
           "key": "costs",
           "ask": "What the running costs may be, and who pays them."
+        },
+        {
+          "key": "launch",
+          "ask": "What must be true before the public launch, and who signs it off."
         }
       ],
       "inputs": [
@@ -465,6 +520,70 @@
           "kind": "account"
         }
       ]
+    },
+    {
+      "id": "delivery",
+      "title": "Delivery conventions",
+      "path": "docs/delivery.md",
+      "when": "always",
+      "check": "sections",
+      "sections": [
+        {
+          "key": "levels",
+          "title": "Backlog levels and IDs"
+        },
+        {
+          "key": "statuses",
+          "title": "Statuses"
+        },
+        {
+          "key": "ready",
+          "title": "Definition of ready"
+        },
+        {
+          "key": "done",
+          "title": "Definition of done"
+        },
+        {
+          "key": "labels",
+          "title": "Labels and lanes"
+        },
+        {
+          "key": "template",
+          "title": "Item template"
+        },
+        {
+          "key": "requests",
+          "title": "Requests between lanes"
+        },
+        {
+          "key": "tracker",
+          "title": "Tracker projection"
+        },
+        {
+          "key": "agreements",
+          "title": "Working agreements"
+        }
+      ],
+      "areas": [
+        {
+          "key": "done",
+          "ask": "What done means beyond passing checks, such as review, deployment to a test environment, verification on real devices or in every language, and updated documents."
+        },
+        {
+          "key": "tracker",
+          "ask": "Which tracker shows the backlog as a board, and in which project, or that the project uses none."
+        },
+        {
+          "key": "estimates",
+          "ask": "Whether work is estimated, in which unit, and who supplies the estimates."
+        },
+        {
+          "key": "agreements",
+          "ask": "How much work one lane has in progress at once, how bugs are filed, how long a spike may run, and when work may move between milestones."
+        }
+      ],
+      "inputs": []
     },
     {
       "id": "agents",
@@ -1138,6 +1257,56 @@
           "kind": "access"
         }
       ]
+    },
+    {
+      "id": "formats",
+      "title": "File and data formats",
+      "path": "docs/formats.md",
+      "when": {
+        "flag": "file_formats"
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "formats",
+          "title": "Formats"
+        },
+        {
+          "key": "schema",
+          "title": "Schema"
+        },
+        {
+          "key": "versioning",
+          "title": "Versioning and compatibility"
+        },
+        {
+          "key": "validation",
+          "title": "Validation and errors"
+        },
+        {
+          "key": "examples",
+          "title": "Examples"
+        }
+      ],
+      "areas": [
+        {
+          "key": "formats",
+          "ask": "Which files or payloads the product reads and writes, and who else consumes them."
+        },
+        {
+          "key": "schema",
+          "ask": "Which fields each format has, with types and which are required."
+        },
+        {
+          "key": "versioning",
+          "ask": "How a format changes without breaking files that already exist."
+        },
+        {
+          "key": "validation",
+          "ask": "What happens when an input is malformed or carries unknown fields."
+        }
+      ],
+      "inputs": []
     },
     {
       "id": "cli",
@@ -2416,6 +2585,16 @@
           "kind": "information"
         }
       ]
+    },
+    {
+      "id": "audit-log",
+      "title": "Audit log",
+      "path": "docs/audit-log.md",
+      "when": "always",
+      "check": "exists",
+      "sections": [],
+      "areas": [],
+      "inputs": []
     }
   ]
 }

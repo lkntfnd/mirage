@@ -142,12 +142,13 @@ Markers are HTML comments, so they stay invisible when rendered and work in any 
 ```
 
 - An input starts at a line matching `### IN-\d{3} <title>`.
-- The allowed keys are `Status`, `Kind`, `Needed for`, `How to get`, `Location` and `Owner`.
+- The allowed keys are `Status`, `Kind`, `Needed for`, `How to get`, `Location`, `Reason` and `Owner`.
 - `Status` is `missing`, `provided` or `not-needed`.
 - `Kind` is `information`, `asset`, `account`, `access` or `tool`.
 - `Needed for` is required and non-empty.
 - `How to get` is required when the input is missing.
 - `Location` is required when the input is provided. It names where the thing lives, never the thing itself when it is a secret.
+- `Reason` is required when the input is not-needed.
 
 ## 6. PRD
 
@@ -205,6 +206,20 @@ The frontmatter is a strict YAML subset between two `---` lines at the top of th
 
 Any other key is an error.
 
+### Body sections
+
+The body of a story or a task uses the same markers as documents (section 4). Each marker is followed by a heading in the project's language.
+
+| Marker | Holds | Required |
+|---|---|---|
+| `<!-- mirage:section context -->` | why the item exists, with its requirement and document links | yes |
+| `<!-- mirage:section acceptance -->` | the checklist of testable criteria | yes |
+| `<!-- mirage:section technical -->` | endpoints, tables, configuration keys and files | no |
+| `<!-- mirage:section verification -->` | the tests, scenario IDs or commands that prove the criteria | yes |
+| `<!-- mirage:section out-of-scope -->` | what the item leaves out, or a sentence saying nothing is excluded | yes |
+
+A story or task whose status is `ready`, `in-progress`, `in-review` or `done` carries every required marker. Each required section holds at least one non-blank line after its heading and before the next marker. The acceptance section holds at least one checklist item (`- [ ]` or `- [x]`). Items in `draft`, `blocked` or `cancelled` may omit sections. Milestones and epics have no body sections.
+
 ### Status meaning
 
 A task inherits its story's `questions`, `inputs` and `blocked_by` in addition to its own. An item's prerequisites are:
@@ -213,9 +228,11 @@ A task inherits its story's `questions`, `inputs` and `blocked_by` in addition t
 - every input is provided or not-needed
 - every blocker is done
 
+A spike is the exception. The questions a spike story lists are the ones it answers, so they are not prerequisites of the spike or of its tasks. A spike whose status is `done` while one of its questions is still `open` is reported as `backlog-done`, because its outcome was not recorded.
+
 Status rules:
 
-- **ready.** Every prerequisite is met, the body holds at least one checklist item (`- [ ]` or `- [x]`), and a feature story lists at least one requirement.
+- **ready.** Every prerequisite is met and a feature story lists at least one requirement. A story or task also meets the body-section rule above. A milestone or epic holds at least one checklist item.
 - **blocked.** At least one prerequisite is unmet, or `blocked_reason` is set.
 - **done.** `evidence` is set, and every descendant is done or cancelled. The descendants are a story's tasks, an epic's stories in every milestone, and a milestone's stories.
 - **in-progress and in-review.** No prerequisite check applies.
@@ -231,11 +248,11 @@ Status rules:
 | `project` | `project-json` |
 | `docs` | `doc-missing`, `doc-marker`, `doc-section`, `doc-placeholder`, `claude-import`, `adr-duplicate` |
 | `index` | `index-stale` |
-| `register` | `register-parse`, `register-duplicate`, `register-field`, `register-status`, `register-recommendation`, `register-answer`, `register-covers`, `inputs-parse`, `inputs-duplicate`, `inputs-field`, `inputs-status`, `inputs-kind`, `inputs-needed-for`, `inputs-how`, `inputs-location` |
+| `register` | `register-parse`, `register-duplicate`, `register-field`, `register-status`, `register-recommendation`, `register-answer`, `register-covers`, `inputs-parse`, `inputs-duplicate`, `inputs-field`, `inputs-status`, `inputs-kind`, `inputs-needed-for`, `inputs-how`, `inputs-location`, `inputs-reason` |
 | `prd` | `prd-id`, `prd-duplicate`, `prd-scope`, `prd-release`, `prd-area` |
 | `refs` | `ref-missing` |
 | `coverage` | `coverage-req`, `coverage-area` |
-| `backlog` | `backlog-filename`, `backlog-id`, `backlog-frontmatter`, `backlog-field`, `backlog-hierarchy`, `backlog-ref`, `backlog-cycle`, `backlog-ready`, `backlog-blocked`, `backlog-done`, `backlog-estimate`, `backlog-label`, `backlog-kind`, `backlog-due`, `backlog-replace` |
+| `backlog` | `backlog-filename`, `backlog-id`, `backlog-frontmatter`, `backlog-field`, `backlog-hierarchy`, `backlog-ref`, `backlog-cycle`, `backlog-ready`, `backlog-blocked`, `backlog-done`, `backlog-section`, `backlog-estimate`, `backlog-label`, `backlog-kind`, `backlog-due`, `backlog-replace` |
 | `sources` | `sources-missing`, `sources-hash`, `sources-unlisted` |
 | `links` | `link-broken` |
 | `secrets` | `secret` |
@@ -248,9 +265,10 @@ Group details:
 - **coverage-area.** Every area of every planned document is named in the `Covers` of at least one question, whatever its status.
 - **backlog-ref.** Every ID in `req`, `questions`, `inputs`, `blocked_by`, `replaces` and `replaced_by` exists. An item cannot block itself. A blocker cannot be cancelled.
 - **backlog-cycle.** The `blocked_by` graph has no cycle. Report one cycle path.
+- **backlog-section.** A story or task in `ready`, `in-progress`, `in-review` or `done` misses a required body section, has one that is empty, or has no checklist item in its acceptance section. The message names the section.
 - **backlog-label.** A story or task has at least one `area:` label. Every area is declared in `project.json`. With several areas, `lane` is set and is one of them.
 - **backlog-replace.** The target of `replaces` is cancelled, and it names this item in `replaced_by`.
-- **sources.** Only when the `sources` document is planned. `docs/sources/SHA256SUMS` holds lines `<sha256>  <relative path>`. Every listed file matches its hash, and every file under `docs/sources/` other than `SHA256SUMS` is listed.
+- **sources.** Only when the `sources` document is planned. `docs/sources/SHA256SUMS` holds lines `<sha256>  <path>`, with each path relative to `docs/sources/`, as `shasum -a 256` writes them when run inside that folder. Every listed file matches its hash, and every file under `docs/sources/` other than `SHA256SUMS` is listed.
 - **links.** Every relative Markdown link target in a scanned file exists, ignoring `#anchor` parts, `http:`, `https:` and `mailto:` links.
 - **secrets.** A scanned file or `.mirage/project.json` holds any of these:
   - a private key header `-----BEGIN [A-Z ]*PRIVATE KEY-----`
@@ -266,10 +284,12 @@ Group details:
 ```
 python3 .mirage/check.py check [--only GROUP[,GROUP]] [--json]
 python3 .mirage/check.py plan [--json]
+python3 .mirage/check.py docs-ready [--json]
 python3 .mirage/check.py ready [--json]
 python3 .mirage/check.py index
-python3 .mirage/check.py set-status ID STATUS [--evidence TEXT]
+python3 .mirage/check.py set-status ID [ID ...] STATUS [--evidence TEXT]
 python3 .mirage/check.py sync-plan TRACKER
+python3 .mirage/check.py sync-expect TRACKER
 python3 .mirage/check.py sync-record TRACKER --id ID --remote-id RID [--key KEY] [--url URL]
 python3 .mirage/check.py sync-record TRACKER --link FROM TO
 python3 .mirage/check.py sync-record TRACKER --unlink FROM TO
@@ -291,10 +311,18 @@ Every command accepts `--root PATH`.
   "inputs": [{"key": "...", "title": "...", "kind": "account"}]}]}
 ```
 
+**docs-ready.** Answers one question: is the documentation sufficient to plan the backlog? It runs the `project`, `docs`, `register`, `prd`, `refs`, `links`, `sources` and `secrets` groups and the `coverage-area` rule. It ignores `coverage-req`, the `backlog` and `index` groups, and every diagnostic whose path is under `backlog/`. It adds two conditions of its own: `docs/prd.md` defines at least one requirement whose scope is not `OUT`, and `docs/audit-log.md` records a documents audit, meaning it holds a line that starts with `## YYYY-MM-DD Documents`.
+
+- When nothing is reported it prints `sufficient` and exits 0.
+- Otherwise it prints the diagnostics in `check` format, then `not sufficient: N problems`, and exits 1. A PRD with no in-scope requirement is reported as `docs/prd.md: prd-empty: no requirement is in scope`. An audit log with no documents entry is reported as `docs/audit-log.md: audit-missing: no documents audit is recorded; run mirage-audit`. A missing audit log is `doc-missing`, as for any planned document. `prd-empty` and `audit-missing` are reported only by this command.
+- In both cases it then prints every open question, as `open: Q-nnn <title> (blocks: <what it blocks, as in the index, or nothing>)`. Open questions never change the exit code.
+
+With `--json` it prints `{"sufficient": true, "errors": [...], "open_questions": [{"id", "title", "blocks"}]}`.
+
 **ready.** Groups stories and tasks by lane in three lists:
 
 - ready now, meaning status ready with every prerequisite met
-- can become ready, meaning status draft or blocked with every prerequisite met, at least one checklist item and no `blocked_reason`
+- can become ready, meaning status draft or blocked with every prerequisite met, every required body section complete, no `blocked_reason` and, for a feature story, at least one requirement in `req`
 - wrongly ready, meaning status ready with an unmet prerequisite, with the unmet ones named
 
 `--json` gives the same data.
@@ -304,15 +332,15 @@ Every command accepts `--root PATH`.
 - `docs/README.md` starts with `<!-- mirage:generated index -->` and holds:
   - the project name
   - a reading-order table of every planned document with its path and whether it exists
-  - the open questions with what they block
+  - the open questions with what they block: the question's `Blocks` field, then every story or task that lists the question in `questions`, except the spike that answers it
   - the delegated answers awaiting confirmation
   - the missing inputs with what needs them
   - a count table of requirements, questions, inputs, ADRs, milestones, epics, stories and tasks
 - `backlog/README.md` starts with `<!-- mirage:generated backlog -->` and holds:
-  - one section per milestone with a table of its stories and tasks, giving ID, title, status, lane and blockers
+  - one section per milestone with a table of its stories and tasks, giving ID, title, status, lane and blockers. The blockers are the item's own `blocked_by` IDs, then every question and input among its prerequisites that is still unmet.
   - a table of epics
 
-**set-status.** Rewrites only the `status` line of one item's frontmatter, and the `evidence` line when `--evidence` is given. It adds the `evidence` line if it is absent. It refuses an unknown status, and it refuses `done` without evidence, either given or already present.
+**set-status.** Rewrites only the `status` line of each named item's frontmatter, and the `evidence` line when `--evidence` is given. When any named item is refused, no file is changed. It prints one `ID: old -> new` line per item. It adds the `evidence` line if it is absent. It refuses an unknown status, and it refuses `done` without evidence, either given or already present.
 
 **sync-plan.** Compares the backlog with `.mirage/trackers/<TRACKER>.json` and prints one JSON object per line, one operation each, in dependency order. No output means nothing to do.
 
@@ -322,17 +350,31 @@ Every command accepts `--root PATH`.
 4. `unlink` for mapped edges that no longer exist
 5. `orphan` for mapped items whose file is gone
 
-The content hash is the SHA-256 of the file bytes. Each `create` and `update` carries:
+Each `create` and `update` carries the payload below. Its `hash` is the SHA-256 of the canonical JSON of the payload fields other than `hash` and `remote_id`, with sorted keys, so any change in what would be pushed produces an `update`.
 
-- `id`, `level`, `title`, `status`, `priority`, `labels`, `estimate`
+- `id`, `level`, `status`, `priority`, `estimate`
+- `due`: the item's `due` date, or null
+- `title`: the ID, a space and the item's title, such as `M1-E02-S03 Pay for an order by card`
+- `labels`: the item's own labels. A story adds `type:<kind>`, `scope:<scope>` and `release:<release>`. A task adds its story's `scope:` and `release:` labels.
 - `milestone`, which is the M ID or null
 - `epic`, which is the E ID or null
 - `parent`: the epic for a story, the story for a task, and null otherwise
-- `body`: the Markdown body followed by a blank line and `mirage-id: <ID>`
+- `body`: the Markdown body with every line that holds only a `<!-- mirage:... -->` comment removed, followed by a footer. The footer is a blank line, a `---` line, then one line per non-empty field in this order, and always ends with the `mirage-id` line:
+
+  ```
+  Requirements: REQ-PAY-001, REQ-PAY-004
+  Questions: Q-012
+  Inputs: IN-004
+  Blocked by: M1-E02-S02
+  Evidence: <evidence text>
+  mirage-id: M1-E02-S03
+  ```
 - `hash`
 - `remote_id`, on `update` only
 
 An agent runs the operations, records each result with `sync-record`, then runs `sync-plan` again until it prints no operations.
+
+**sync-expect.** Prints one JSON object per line for every mapped item whose current payload hash equals the hash in the map, sorted by ID. Each object is `{"op": "expect", ...}` with the same payload fields as an `update`, including `remote_id`. It is what the tracker holds for that item unless a person edited it there, so an agent compares it with the tracker to find drift. Mapped items with a pending `update` are left out, because their last pushed payload is not known.
 
 **sync-record.** Writes the map file atomically. `--id` stores `remote_id`, `key`, `url`, the current content hash and the current status. `--link` and `--unlink` edit the map's `links` list. `--forget ID` removes an orphaned item and every link that touches it, after the agent has reported the orphan. Every other top-level key, such as the adapter's `settings`, is preserved as it was. Map format:
 

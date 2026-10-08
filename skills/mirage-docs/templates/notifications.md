@@ -16,7 +16,7 @@
 <!-- mirage:section templates -->
 ## Templates
 
-{{State who writes each message, in which languages, and how a template's variables are filled for a specific person. Point to docs/i18n.md for the translation workflow it shares. An undecided template owner becomes a question in docs/questions.md.}}
+{{State who writes each message, in which languages, and how a template's variables are filled for a specific person. Point to docs/i18n.md for the translation workflow it shares, or state that the product ships in one language when that document is not planned. An undecided template owner becomes a question in docs/questions.md.}}
 
 <!-- mirage:section preferences -->
 ## Preferences

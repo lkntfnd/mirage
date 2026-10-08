@@ -35,3 +35,12 @@ The database is backed up nightly and kept for 30 days.
 ## Support
 
 Customers report problems by phone or at the counter.
+
+<!-- mirage:section launch -->
+## Launch checklist
+
+- [ ] Every v1.0 requirement is done, with evidence recorded.
+- [ ] Error tracking and uptime alerts reach the shop owner.
+- [ ] A database backup has been restored once as a test.
+
+The shop owner signs off the launch (Q-005).

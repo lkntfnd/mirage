@@ -15,6 +15,10 @@ with open(CATALOG_PATH, encoding="utf-8") as f:
 SECTIONS_DOCS = [doc for doc in CATALOG["docs"] if doc["check"] == "sections"]
 
 DOC_MARKER_RE = re.compile(r"<!-- mirage:doc [^\n]*-->")
+PLACEHOLDER_RE = re.compile(r"\{\{.*?\}\}")
+# The shapes the validator's refs group resolves. Standard wording that holds one
+# would fail `check` in every project that copies the template.
+ID_RE = re.compile(r"\b(?:M\d+-E\d+-S\d+(?:-T\d+)?|REQ-[A-Z]+-\d{3}|Q-\d{3}|IN-\d{3}|ADR-\d{4})\b")
 SECTION_MARKER_RE = re.compile(r"<!-- mirage:section (\S+) -->")
 
 
@@ -97,6 +101,12 @@ def make_test(doc: dict):
         h1_lines = [line for line in clean_lines if line.startswith("# ")]
         self.assertEqual(
             len(h1_lines), 1, f"{doc['id']}: expected exactly one H1, found {h1_lines}"
+        )
+
+        standard_wording = PLACEHOLDER_RE.sub("", clean_text)
+        self.assertEqual(
+            ID_RE.findall(standard_wording), [],
+            f"{doc['id']}: standard wording holds an ID that no project will have; write a pattern such as M<n>-E<nn>-S<nn>",
         )
 
         self.assertIn(

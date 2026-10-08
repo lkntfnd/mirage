@@ -6,7 +6,7 @@
 <!-- mirage:section summary -->
 ## Product summary
 
-{{Two or three paragraphs: the problem, the people who have it, the product's answer, and why it is worth building now. Cite questions as (Q-nnn) where an answer shaped the text.}}
+{{Two or three paragraphs: the problem, the people who have it, the product's answer, and why it is worth building now. Then the fixed constraints, and the existing products the owner named to learn from, with what to copy or avoid in each. Cite questions as (Q-nnn) where an answer shaped the text.}}
 
 <!-- mirage:section users -->
 ## Users and roles
@@ -29,7 +29,7 @@
 
 | Metric | Target | Measured by | By |
 |---|---|---|---|
-| {{What is measured}} | {{Number with unit}} | {{Tool or method}} | {{Release or date from the register}} |
+| {{What is measured}} | {{Number with unit from the register, or "Open (Q-nnn)" while the owner has not set it}} | {{Tool or method}} | {{Release or date from the register, or "Open (Q-nnn)"}} |
 
 <!-- mirage:section areas -->
 ## Requirement areas

@@ -1,8 +1,18 @@
 # GitHub Issues adapter
 
+## Contents
+
+- [What to use](#what-to-use)
+- [Capability detection](#capability-detection)
+- [Mapping](#mapping)
+- [Status mapping](#status-mapping)
+- [Executing each op kind](#executing-each-op-kind)
+- [Pulling status back](#pulling-status-back)
+- [Limits and gotchas](#limits-and-gotchas)
+
 ## What to use
 
-Prefer GitHub's official MCP server, [github/github-mcp-server](https://github.com/github/github-mcp-server), when it is connected in the agent's session. Connect it at the hosted endpoint `https://api.githubcopilot.com/mcp/`, or run the `ghcr.io/github/github-mcp-server` Docker image locally, per its [README](https://github.com/github/github-mcp-server). The tools that matter here are `issue_write`, `issue_read`, `list_issues`, `search_issues`, `sub_issue_write`, `list_issue_types`, `list_issue_fields`, `label_write`, `get_label` and `list_label`. The server ships no milestone tool as of this writing, so create and update milestones with `gh` or the REST API even when the MCP server handles the rest.
+Prefer GitHub's official MCP server, [github/github-mcp-server](https://github.com/github/github-mcp-server), when it is connected in the agent's session. Connect it at the hosted endpoint `https://api.githubcopilot.com/mcp/`, or run the `ghcr.io/github/github-mcp-server` Docker image locally, per its [README](https://github.com/github/github-mcp-server). The tools that matter here are `issue_write`, `issue_read`, `list_issues`, `search_issues`, `sub_issue_write`, `list_issue_types`, `list_issue_fields`, `label_write`, `get_label` and `list_label`. These are the server's own tool names. In a session each one carries the prefix of the name the server was connected under. The server ships no milestone tool as of this writing, so create and update milestones with `gh` or the REST API even when the MCP server handles the rest.
 
 Unverified: whether the MCP server exposes any tool for issue dependencies. None appeared in its published tool list, so use `gh` or the REST API for `blocked_by` links.
 
@@ -36,7 +46,7 @@ Never fold a missing capability into free text without naming the fallback in th
 | task | a sub-issue of the story issue |
 | blocked_by | an [issue dependency](https://docs.github.com/en/rest/issues/issue-dependencies), "this issue is blocked by that issue" |
 
-This refines the baseline guess in `docs/design.md` section 9 with two confirmed facts. An `Epic` issue type, when the organization has configured one, is a cleaner mapping than the `epic` label, because it survives a search or a board grouped by type. Sub-issues and issue dependencies are both real, GA GitHub relationships now, not text conventions.
+Two facts shape this mapping. An `Epic` issue type, when the organization has configured one, is a cleaner mapping than the `epic` label, because it survives a search or a board grouped by type. Sub-issues and issue dependencies are both real, GA GitHub relationships now, not text conventions.
 
 Every `area:<name>` label becomes a GitHub label of the same name. Create the label first with `POST /repos/{owner}/{repo}/labels` on the [labels API](https://docs.github.com/en/rest/issues/labels) when it does not already exist. A label description is capped at 100 characters, but the docs give no length cap on the name itself.
 
@@ -61,9 +71,11 @@ GitHub issues have no built-in estimate field either. Fall back to a label.
 | 5 | label `estimate:5` |
 | 8 | label `estimate:8` |
 
-Write the issue body exactly as `sync-plan` emits it in the operation's `body` field, the Markdown body followed by a blank line and `mirage-id: <ID>`. Do not add or strip anything around that line.
+Write the issue body exactly as `sync-plan` emits it in the operation's `body` field. It is the Markdown body followed by a footer whose last line is `mirage-id: <ID>`. Do not add or strip anything.
 
 When the map has no entry for an ID, search for it before creating anything, with `GET /search/issues?q=repo:{owner}/{repo}+"mirage-id:+<ID>"+in:body` on the [search API](https://docs.github.com/en/rest/search/search), or `gh issue list --search "mirage-id: <ID> in:body"` per the [gh issue list](https://cli.github.com/manual/gh_issue_list) manual. Record whatever it finds with `sync-record` before creating, so a rerun never duplicates the issue.
+
+The operation's `labels` list is complete. It holds the item's `area:*` labels and, for stories and tasks, `type:*`, `scope:*` and `release:*` labels. Create and apply every label in the list the same way as the area labels. The operation's `title` already starts with the backlog ID, so write it unchanged.
 
 ## Status mapping
 
@@ -85,7 +97,7 @@ GitHub Issues models only open and closed, plus an optional `state_reason` on cl
 
 **create, epic.** `gh issue create --title "{title}" --body "{body}" --type Epic` when the capability check passed, otherwise `--label epic` (the MCP tool is `issue_write`). Then `sync-record github --id {id} --remote-id {issue id} --url {html_url}`. Store the issue's numeric `id` field as `remote_id`, not its `number`, because the sub-issue and dependency endpoints below take that id, per the [issues API](https://docs.github.com/en/rest/issues/issues).
 
-**create, story or task.** `gh issue create --title "{title}" --body "{body}" --label {labels} --parent {parent issue number}` (the MCP tools are `issue_write` then `sub_issue_write`). The `--parent` flag both creates the issue and files it as a sub-issue in one call. Then `sync-record` as above.
+**create, story or task.** `gh issue create --title "{title}" --body "{body}" --label {labels} --parent {parent issue number} --milestone "{milestone title}"` (the MCP tools are `issue_write` then `sub_issue_write`). The `--parent` flag both creates the issue and files it as a sub-issue in one call. `--milestone` takes the milestone's title as mirage pushed it, which starts with the op's `milestone` ID. The REST API takes the milestone number from the map instead. Then `sync-record` as above.
 
 **update.** `gh issue edit {number} --title "{title}" --body "{body}"`, then diff the current labels against the operation's `labels` plus the adapter's own `status:*`, `priority:*` and `estimate:*` labels, applying `--add-label`/`--remove-label` for each difference (the MCP tool is `issue_write`). Then `sync-record github --id {id} --remote-id {issue id} --url {html_url}`, which refreshes the stored hash and status.
 

@@ -79,7 +79,7 @@ def main() -> int:
         if path.exists():
             allowed += path.read_text()
     scanned = [p for p in (project / "docs").rglob("*.md")
-               if p.relative_to(project).as_posix() not in ("docs/questions.md", "docs/inputs.md")
+               if p.relative_to(project).as_posix() not in ("docs/questions.md", "docs/inputs.md", "docs/audit-log.md")
                and "sources" not in p.relative_to(project).parts]
     scanned += list((project / "backlog").glob("*.md")) + [project / "AGENTS.md"]
     for path in scanned:

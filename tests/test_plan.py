@@ -149,7 +149,7 @@ class PlanOutput(unittest.TestCase):
             (root / ".mirage" / "catalog.json").unlink()
             bundled = [d["key"] for d in json.loads(run("plan", "--root", root, "--json")[1])["docs"]]
         self.assertEqual(keys, ["base", "integration:tile-maps"])
-        self.assertEqual(bundled[:4], ["glossary", "questions", "inputs", "index"])
+        self.assertEqual(bundled[:4], ["readme", "glossary", "index", "summary"])
         self.assertIn("cli", bundled)
         self.assertIn("integration:tile-maps", bundled)
 

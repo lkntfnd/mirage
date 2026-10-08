@@ -28,7 +28,7 @@ The facets decide every later question and document, so settle them first. `pyth
 | `language` | The language documents are written in. English (`en`) is the default. IDs, file names, markers and frontmatter keys stay English in every language. |
 | `components` | Every deliverable part, each with a lowercase `id` and a `kind`: `website`, `web-app`, `mobile-app`, `desktop-app`, `browser-extension`, `backend-service`, `cli`, `library`, `data-pipeline`, `embedded` or `game`. A mobile app with an API and an admin panel is three components. |
 | `flags` | Each true or false, and missing means false. The flags are listed below. |
-| `integrations` | One lowercase slug per third-party system the product talks to, such as `stripe` or `hubspot`. Each gets its own document. |
+| `integrations` | One lowercase slug per third-party system the product's own code calls or receives calls from at runtime, such as `stripe` or `hubspot`. Each gets its own document. Tools the team only uses, such as the CI service, hosting or error tracking, belong in `docs/operations.md` instead. |
 | `regulated` | One slug per regulation or standard that applies, such as `gdpr`, `hipaa` or `pci-dss`. |
 | `domain_topics` | One slug per business rule set complex enough for its own spec, such as `pricing`, `loyalty-points` or `scheduling`. |
 | `releases` | Release names in shipping order, such as `beta`, `v1.0` and `v1.1`. |
@@ -39,7 +39,7 @@ The flags:
 
 | Flag | True when |
 |---|---|
-| `accounts` | People sign up or sign in. |
+| `accounts` | People sign up or sign in to the product you build. Staff signing in to a vendor's hosted tool, such as a CMS, does not count. |
 | `personal_data` | The product stores or processes data about identifiable people, including contact forms and analytics identifiers. |
 | `payments` | Money moves through the product. |
 | `cms` | People who are not developers edit content. |
@@ -50,6 +50,7 @@ The flags:
 | `offline` | Part of the product must work without a connection. |
 | `realtime` | Views update live without a refresh. |
 | `ai` | The product calls a machine learning model or a large language model. |
-| `admin` | Staff use back-office tools. |
+| `admin` | Staff use back-office tools that you build. A vendor's own admin screens do not count. |
 | `migration` | The product replaces an existing system, site or app. |
+| `file_formats` | The product reads or writes its own file formats or configuration files that people or other tools depend on. |
 | `source_documents` | Input documents, such as a client brief, must be preserved unchanged under `docs/sources/`. |

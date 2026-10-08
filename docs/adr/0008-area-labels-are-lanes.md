@@ -10,4 +10,5 @@ Decided by the owner on 2026-09-26.
 
 ## Consequences
 
-- Status is the only field that flows back from a tracker into the files. Label, title, description and hierarchy edits made in a tracker are reported as drift and overwritten on the next push.
+- Status is the only field that flows back from a tracker into the files. A title, description, label or hierarchy edit made in a tracker is drift. Mirage reports it before pushing, and the owner chooses for each item whether to copy the change into the file or let the push replace it.
+- Mirage writes each tracker item's title, description, labels, parent, milestone, priority, estimate, due date, status and blocking links, and nothing else. Comments, attachments and assignees that people add on the board are never changed.

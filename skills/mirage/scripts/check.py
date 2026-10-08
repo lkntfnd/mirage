@@ -32,7 +32,7 @@ GROUPS: Dict[str, Tuple[str, ...]] = {
         "register-parse", "register-duplicate", "register-field", "register-status",
         "register-recommendation", "register-answer", "register-covers",
         "inputs-parse", "inputs-duplicate", "inputs-field", "inputs-status", "inputs-kind",
-        "inputs-needed-for", "inputs-how", "inputs-location",
+        "inputs-needed-for", "inputs-how", "inputs-location", "inputs-reason",
     ),
     "prd": ("prd-id", "prd-duplicate", "prd-scope", "prd-release", "prd-area"),
     "refs": ("ref-missing",),
@@ -40,14 +40,23 @@ GROUPS: Dict[str, Tuple[str, ...]] = {
     "backlog": (
         "backlog-filename", "backlog-id", "backlog-frontmatter", "backlog-field",
         "backlog-hierarchy", "backlog-ref", "backlog-cycle", "backlog-ready", "backlog-blocked",
-        "backlog-done", "backlog-estimate", "backlog-label", "backlog-kind", "backlog-due",
-        "backlog-replace",
+        "backlog-done", "backlog-section", "backlog-estimate", "backlog-label", "backlog-kind",
+        "backlog-due", "backlog-replace",
     ),
     "sources": ("sources-missing", "sources-hash", "sources-unlisted"),
     "links": ("link-broken",),
     "secrets": ("secret",),
 }
-CODES: Dict[str, str] = {code: group for group, codes in GROUPS.items() for code in codes}
+# Codes that a command reports and no `check` group owns.
+COMMAND_CODES: Dict[str, str] = {"prd-empty": "docs-ready", "audit-missing": "docs-ready"}
+CODES: Dict[str, str] = {
+    **{code: group for group, codes in GROUPS.items() for code in codes},
+    **COMMAND_CODES,
+}
+DOCS_READY_GROUPS = ("project", "docs", "register", "prd", "refs", "links", "sources", "secrets")
+AUDIT_LOG = "docs/audit-log.md"
+# An entry heading written by mirage-audit, such as `## 2026-10-08 Documents and backlog`.
+AUDIT_ENTRY = re.compile(r"## \d{4}-\d{2}-\d{2} Documents\b")
 
 PROJECT_FILE = ".mirage/project.json"
 PROJECT_CATALOG = ".mirage/catalog.json"
@@ -95,6 +104,10 @@ STORY_KINDS = ("feature", "spike", "bug", "chore", "docs")
 PRIORITIES = ("urgent", "high", "medium", "low")
 STORY_SCOPES = ("must", "should", "may")
 ESTIMATES = ("1", "2", "3", "5", "8")
+BODY_REQUIRED = ("context", "acceptance", "verification", "out-of-scope")
+BODY_OPTIONAL = ("technical",)
+BODY_STATUSES = ("ready", "in-progress", "in-review", "done")
+MIRAGE_COMMENT = re.compile(r"<!--\s*mirage:(?:(?!-->).)*-->")
 
 KEY_LEVELS: Dict[str, Tuple[str, ...]] = {
     "id": LEVELS, "title": LEVELS, "status": LEVELS,
@@ -299,7 +312,6 @@ class Item:
     fields: Dict[str, FmField]
     body: List[str]
     body_line: int
-    digest: str
     frontmatter_ok: bool
 
     @property
@@ -733,7 +745,7 @@ QUESTIONS = RegisterSpec(
 )
 INPUTS = RegisterSpec(
     INPUTS_FILE, "IN", "inputs",
-    ("Status", "Kind", "Needed for", "How to get", "Location", "Owner"), Input,
+    ("Status", "Kind", "Needed for", "How to get", "Location", "Reason", "Owner"), Input,
 )
 FIELD_LINE = re.compile(r"- ([A-Za-z][A-Za-z ]*?):(?:[ \t]+(.*))?")
 
@@ -922,14 +934,10 @@ def load_backlog(root: Path) -> Tuple[Dict[str, Item], List[Diagnostic]]:
         if item_id in items:
             diagnostics.append(Diagnostic(rel, None, "backlog-id", f"{item_id} is already used by {items[item_id].path}"))
             continue
-        raw = path.read_bytes()
-        lines = raw.decode("utf-8", errors="replace").replace("\r\n", "\n").split("\n")
+        lines = path.read_bytes().decode("utf-8", errors="replace").replace("\r\n", "\n").split("\n")
         fields, body_start, errors = parse_frontmatter(lines)
         diagnostics += [Diagnostic(rel, number, "backlog-frontmatter", message) for number, message in errors]
-        items[item_id] = Item(
-            item_id, rel, fields, lines[body_start:], body_start + 1,
-            hashlib.sha256(raw).hexdigest(), not errors,
-        )
+        items[item_id] = Item(item_id, rel, fields, lines[body_start:], body_start + 1, not errors)
     return items, diagnostics
 
 
@@ -1126,6 +1134,8 @@ def check_input(entry: Input) -> List[Diagnostic]:
         report("How to get", "inputs-how", "is missing and needs How to get")
     if entry.status == "provided" and not entry.value("Location"):
         report("Location", "inputs-location", "is provided and needs a Location")
+    if entry.status == "not-needed" and not entry.value("Reason"):
+        report("Reason", "inputs-reason", "is not-needed and needs a Reason")
     return out
 
 
@@ -1188,7 +1198,7 @@ def rule_refs(project: Project) -> List[Diagnostic]:
     return out
 
 
-def rule_coverage(project: Project) -> List[Diagnostic]:
+def check_coverage_req(project: Project) -> List[Diagnostic]:
     out: List[Diagnostic] = []
     rank = {release: index for index, release in enumerate(project.facets.releases)}
     stories = [
@@ -1203,6 +1213,11 @@ def rule_coverage(project: Project) -> List[Diagnostic]:
                 PRD_FILE, req.line, "coverage-req",
                 f"{req.id} is in no live story's req with release {req.release} or earlier",
             ))
+    return out
+
+
+def check_coverage_area(project: Project) -> List[Diagnostic]:
+    out: List[Diagnostic] = []
     covered = {key for question in project.questions for key in question.covers}
     for doc in project.plan:
         for area in doc.kind.areas:
@@ -1210,6 +1225,10 @@ def rule_coverage(project: Project) -> List[Diagnostic]:
             if key not in covered:
                 out.append(Diagnostic(QUESTIONS_FILE, None, "coverage-area", f"no question covers {key}: {area.ask}"))
     return out
+
+
+def rule_coverage(project: Project) -> List[Diagnostic]:
+    return check_coverage_req(project) + check_coverage_area(project)
 
 
 @dataclass(frozen=True)
@@ -1230,12 +1249,18 @@ def effective(project: Project, item: Item, key: str) -> List[str]:
     return values
 
 
+def is_spike_work(project: Project, item: Item) -> bool:
+    """A spike exists to answer its questions, so they do not hold it or its tasks back."""
+    story = project.items.get(item.parent or "") if item.level == "task" else item
+    return story is not None and story.level == "story" and story.kind == "spike"
+
+
 def unmet_prerequisites(project: Project, item: Item) -> List[Unmet]:
     if item.level not in WORK_LEVELS:
         return []
     unmet: List[Unmet] = []
     confirmed = project.facets.require_confirmed_delegation
-    for ref in effective(project, item, "questions"):
+    for ref in ([] if is_spike_work(project, item) else effective(project, item, "questions")):
         question = project.question_by_id.get(ref)
         if question is None:
             unmet.append(Unmet(ref, "does not exist"))
@@ -1256,6 +1281,15 @@ def unmet_prerequisites(project: Project, item: Item) -> List[Unmet]:
         elif blocker.status != "done":
             unmet.append(Unmet(ref, f"is {blocker.status or 'without a status'}"))
     return unmet
+
+
+def question_blocks(project: Project, question: Question) -> List[str]:
+    """What waits on a question: its Blocks field, then every item that lists it and is not the spike answering it."""
+    blocks = list(question.blocks)
+    for item in sorted(project.items.values(), key=lambda entry: natural_key(entry.id)):
+        if question.id in item.listed("questions") and item.id not in blocks and not is_spike_work(project, item):
+            blocks.append(item.id)
+    return blocks
 
 
 def descendants(project: Project, item: Item) -> List[Item]:
@@ -1389,6 +1423,46 @@ def check_structure(project: Project, item: Item) -> List[Diagnostic]:
     return out
 
 
+def body_section_problems(item: Item) -> List[Tuple[Optional[int], str]]:
+    """(line, message) for each defect in a story's or task's body sections, whatever its status."""
+    marks: List[Tuple[int, str]] = []  # (index into item.body, section key), in file order
+    for number, line in unfenced(item.body, item.body_line):
+        marks += [(number - item.body_line, match.group(1)) for match in SECTION_MARKER.finditer(line)]
+    problems: List[Tuple[Optional[int], str]] = []
+    for key in BODY_REQUIRED + BODY_OPTIONAL:
+        at = next((index for index, (_, found) in enumerate(marks) if found == key), None)
+        if at is None:
+            if key in BODY_REQUIRED:
+                problems.append((None, f"section {key} is missing; add the marker <!-- mirage:section {key} --> "
+                                       "before its heading"))
+            continue
+        start = marks[at][0]
+        end = marks[at + 1][0] if at + 1 < len(marks) else len(item.body)
+        region = item.body[start + 1:end]
+        heading = next((index for index, line in enumerate(region) if line.strip()), None)
+        if heading is None or not region[heading].lstrip().startswith("#"):
+            problems.append((item.body_line + start, f"section marker {key} must sit directly before its heading"))
+            continue
+        content = region[heading + 1:]
+        if key not in BODY_REQUIRED:
+            continue
+        if not any(line.strip() for line in content):
+            problems.append((item.body_line + start, f"section {key} is empty; write at least one line after its heading"))
+        elif key == "acceptance" and not any(CHECKLIST.match(line) for _, line in unfenced(content)):
+            problems.append((item.body_line + start, "section acceptance has no checklist item"))
+    return problems
+
+
+def check_body(item: Item) -> List[Diagnostic]:
+    if item.level not in WORK_LEVELS or item.status not in BODY_STATUSES:
+        return []
+    return [Diagnostic(item.path, line, "backlog-section", message) for line, message in body_section_problems(item)]
+
+
+def lacks_requirement(item: Item) -> bool:
+    return item.level == "story" and item.kind == "feature" and not item.listed("req")
+
+
 def check_status(project: Project, item: Item) -> List[Diagnostic]:
     status = item.status
     line = item.line("status")
@@ -1401,9 +1475,9 @@ def check_status(project: Project, item: Item) -> List[Diagnostic]:
     if status == "ready":
         if unmet:
             report("backlog-ready", "status is ready but " + ", ".join(str(u) for u in unmet))
-        if not item.has_checklist:
+        if item.level not in WORK_LEVELS and not item.has_checklist:
             report("backlog-ready", "status is ready but the body has no checklist item")
-        if item.level == "story" and item.kind == "feature" and not item.listed("req"):
+        if lacks_requirement(item):
             report("backlog-ready", "status is ready but the feature story lists no requirement")
     elif status == "blocked" and not unmet and not item.scalar("blocked_reason"):
         report("backlog-blocked", "status is blocked but every prerequisite is met and blocked_reason is not set")
@@ -1413,6 +1487,11 @@ def check_status(project: Project, item: Item) -> List[Diagnostic]:
         open_items = [d.id for d in descendants(project, item) if d.status not in ("done", "cancelled")]
         if open_items:
             report("backlog-done", f"status is done but not every descendant is done or cancelled: {', '.join(open_items)}")
+        if item.level == "story" and item.kind == "spike":
+            unanswered = [ref for ref in item.listed("questions")
+                          if ref in project.question_by_id and project.question_by_id[ref].status == "open"]
+            if unanswered:
+                report("backlog-done", f"status is done but the spike's outcome is not recorded: {', '.join(unanswered)} is still open")
     return out
 
 
@@ -1460,6 +1539,7 @@ def rule_backlog(project: Project) -> List[Diagnostic]:
     for item in project.items_at(*LEVELS):
         if item.frontmatter_ok:
             out += check_fields(project, item) + check_structure(project, item) + check_status(project, item)
+            out += check_body(item)
     return out + check_cycles(project)
 
 
@@ -1581,7 +1661,7 @@ def render_docs_index(project: Project) -> str:
     questions = project.unique_questions
     out += ["", "## Open questions", ""]
     out += md_table(["ID", "Question", "Blocks"], [
-        [q.id, q.title, ", ".join(q.blocks) or "-"] for q in questions if q.status == "open"
+        [q.id, q.title, ", ".join(question_blocks(project, q)) or "-"] for q in questions if q.status == "open"
     ])
     out += ["", "## Delegated answers awaiting confirmation", ""]
     out += md_table(["ID", "Question", "Answer"], [
@@ -1602,6 +1682,15 @@ def render_docs_index(project: Project) -> str:
     return "\n".join(out) + "\n"
 
 
+def index_blockers(project: Project, item: Item) -> List[str]:
+    """The item's own blockers, then every question and input it still waits on."""
+    ids = list(item.listed("blocked_by"))
+    for unmet in unmet_prerequisites(project, item):
+        if unmet.id.startswith(("Q-", "IN-")) and unmet.id not in ids:
+            ids.append(unmet.id)
+    return ids
+
+
 def render_backlog_index(project: Project) -> str:
     out = ["<!-- mirage:generated backlog -->", "", "# Backlog", "", GENERATED_NOTE]
     work = project.items_at(*WORK_LEVELS)
@@ -1613,7 +1702,7 @@ def render_backlog_index(project: Project) -> str:
             out += [f"Status: {milestone.status or '-'}.", ""]
         rows = sorted((w for w in work if w.milestone == milestone_id), key=lambda w: natural_key(w.id))
         out += md_table(["ID", "Title", "Status", "Lane", "Blockers"], [
-            [w.id, w.title, w.status or "-", w.lane or "-", ", ".join(w.listed("blocked_by")) or "-"]
+            [w.id, w.title, w.status or "-", w.lane or "-", ", ".join(index_blockers(project, w)) or "-"]
             for w in rows
         ])
     out += ["", "## Epics", ""]
@@ -1636,7 +1725,8 @@ def ready_report(project: Project) -> List[dict]:
             bucket = "wrongly_ready" if unmet else "ready_now"
             if unmet:
                 entry["unmet"] = [str(u) for u in unmet]
-        elif item.status in ("draft", "blocked") and not unmet and item.has_checklist and not item.scalar("blocked_reason"):
+        elif (item.status in ("draft", "blocked") and not unmet and not item.scalar("blocked_reason")
+              and not body_section_problems(item) and not lacks_requirement(item)):
             bucket = "can_become_ready"
         else:
             continue
@@ -1674,12 +1764,22 @@ def format_scalar(text: str) -> str:
     return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def set_status(root: Path, item_id: str, status: str, evidence: Optional[str]) -> str:
+def set_status(root: Path, ids: Sequence[str], status: str, evidence: Optional[str]) -> List[str]:
+    """Change every named item, or none of them when any one is refused."""
     if status not in STATUSES:
         raise UsageError(f"unknown status {status!r}; use one of {', '.join(STATUSES)}")
     if evidence is not None and ("\n" in evidence or not evidence.strip()):
         raise UsageError("evidence must be one non-empty line")
     items, _ = load_backlog(root)
+    edits = [status_edit(root, items, item_id, status, evidence) for item_id in dict.fromkeys(ids)]
+    for path, text, _ in edits:
+        atomic_write(path, text)
+    return [line for _, _, line in edits]
+
+
+def status_edit(root: Path, items: Dict[str, Item], item_id: str, status: str,
+                evidence: Optional[str]) -> Tuple[Path, str, str]:
+    """The file, its new text and the report line for one status change, without writing."""
     item = items.get(item_id)
     if item is None:
         raise UsageError(f"{item_id} has no file in {BACKLOG_DIR}/")
@@ -1702,8 +1802,7 @@ def set_status(root: Path, item_id: str, status: str, evidence: Optional[str]) -
             lines.insert(end - 1, evidence_line)
         else:
             lines[evidence_at] = evidence_line
-    atomic_write(path, "".join(lines))
-    return f"{item_id}: {item.status or '-'} -> {status}"
+    return path, "".join(lines), f"{item_id}: {item.status or '-'} -> {status}"
 
 
 def tracker_path(root: Path, tracker: str) -> Path:
@@ -1737,35 +1836,66 @@ def write_tracker_map(root: Path, tracker: str, data: dict) -> None:
     atomic_write(tracker_path(root, tracker), json.dumps(out, indent=2, ensure_ascii=False) + "\n")
 
 
+def sync_labels(items: Dict[str, Item], item: Item) -> List[str]:
+    """The item's own labels, then the labels derived from its story: type, scope and release."""
+    story: Optional[Item] = None
+    derived: List[str] = []
+    if item.level == "story":
+        story = item
+        derived.append(f"type:{item.kind}")
+    elif item.level == "task":
+        story = items.get(item.parent or "")
+    if story is not None:
+        derived += [f"{key}:{story.scalar(key)}" for key in ("scope", "release") if story.scalar(key)]
+    labels = list(item.listed("labels"))
+    return labels + [label for label in derived if label not in labels]
+
+
 def sync_body(item: Item) -> str:
-    body = "\n".join(item.body).strip("\n")
-    return (body + "\n\n" if body else "") + f"mirage-id: {item.id}"
+    kept = [line for line in item.body if not MIRAGE_COMMENT.fullmatch(line.strip())]
+    body = "\n".join(kept).strip("\n")
+    fields = (
+        ("Requirements", list(item.listed("req"))), ("Questions", list(item.listed("questions"))),
+        ("Inputs", list(item.listed("inputs"))), ("Blocked by", list(item.listed("blocked_by"))),
+        ("Evidence", [item.scalar("evidence")] if item.scalar("evidence") else []),
+    )
+    footer = [f"{name}: {', '.join(values)}" for name, values in fields if values]
+    return (body + "\n\n" if body else "") + "---\n" + "\n".join(footer + [f"mirage-id: {item.id}"])
 
 
-def item_payload(item: Item) -> dict:
-    return {
+def payload_hash(payload: dict) -> str:
+    fields = {key: value for key, value in payload.items() if key not in ("hash", "remote_id")}
+    text = json.dumps(fields, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def item_payload(items: Dict[str, Item], item: Item) -> dict:
+    payload = {
         "id": item.id,
         "level": item.level,
-        "title": item.title,
+        "title": f"{item.id} {item.title}",
         "status": item.status,
         "priority": item.scalar("priority") or None,
-        "labels": list(item.listed("labels")),
+        "labels": sync_labels(items, item),
         "estimate": item.estimate,
+        "due": item.scalar("due") or None,
         "milestone": item.milestone,
         "epic": item.epic,
         "parent": item.parent,
         "body": sync_body(item),
-        "hash": item.digest,
     }
+    payload["hash"] = payload_hash(payload)
+    return payload
 
 
 def sync_plan(items: Dict[str, Item], tracker_map: dict) -> List[dict]:
     mapped = tracker_map["items"]
     ordered = sorted(items.values(), key=lambda i: (LEVEL_RANK[i.level], natural_key(i.id)))
-    ops: List[dict] = [{"op": "create", **item_payload(i)} for i in ordered if i.id not in mapped]
+    payloads = {i.id: item_payload(items, i) for i in ordered}
+    ops: List[dict] = [{"op": "create", **payloads[i.id]} for i in ordered if i.id not in mapped]
     ops += [
-        {"op": "update", **item_payload(i), "remote_id": mapped[i.id].get("remote_id")}
-        for i in ordered if i.id in mapped and mapped[i.id].get("hash") != i.digest
+        {"op": "update", **payloads[i.id], "remote_id": mapped[i.id].get("remote_id")}
+        for i in ordered if i.id in mapped and mapped[i.id].get("hash") != payloads[i.id]["hash"]
     ]
     edges = sorted(
         {(i.id, b) for i in ordered if i.level in WORK_LEVELS for b in i.listed("blocked_by") if b in items},
@@ -1788,6 +1918,20 @@ def sync_plan(items: Dict[str, Item], tracker_map: dict) -> List[dict]:
     return ops
 
 
+def sync_expect(items: Dict[str, Item], tracker_map: dict) -> List[dict]:
+    """The payload each mapped item last pushed, for every item whose file still matches the map's hash."""
+    mapped = tracker_map["items"]
+    out: List[dict] = []
+    for item_id in sorted(mapped, key=natural_key):
+        item = items.get(item_id)
+        if item is None:
+            continue
+        payload = item_payload(items, item)
+        if mapped[item_id].get("hash") == payload["hash"]:
+            out.append({"op": "expect", **payload, "remote_id": mapped[item_id].get("remote_id")})
+    return out
+
+
 def sync_record(root: Path, args: argparse.Namespace) -> str:
     data = load_tracker_map(root, args.tracker)
     if args.id is not None:
@@ -1802,7 +1946,7 @@ def sync_record(root: Path, args: argparse.Namespace) -> str:
             "remote_id": args.remote_id,
             "key": args.key if args.key is not None else previous.get("key"),
             "url": args.url if args.url is not None else previous.get("url"),
-            "hash": item.digest,
+            "hash": item_payload(items, item)["hash"],
             "status": item.status,
         }
         message = f"recorded {args.id} as {args.remote_id}"
@@ -1889,6 +2033,37 @@ def cmd_check(root: Path, args: argparse.Namespace) -> int:
     return 1 if found else 0
 
 
+def docs_ready_problems(project: Project) -> List[Diagnostic]:
+    """What `check` would report that stops the backlog from being planned, plus an empty PRD."""
+    found = run_check(project, DOCS_READY_GROUPS) + check_coverage_area(project)
+    if all(req.scope == "OUT" for req in project.requirements):
+        found.append(Diagnostic(PRD_FILE, None, "prd-empty", "no requirement is in scope"))
+    audit_log = read_text(project.root / AUDIT_LOG)
+    if audit_log is not None and not any(AUDIT_ENTRY.match(line) for line in audit_log.splitlines()):
+        found.append(Diagnostic(AUDIT_LOG, None, "audit-missing", "no documents audit is recorded; run mirage-audit"))
+    return sorted({d for d in found if not d.path.startswith(BACKLOG_DIR + "/")}, key=Diagnostic.sort_key)
+
+
+def open_questions(project: Project) -> List[dict]:
+    return [{"id": q.id, "title": q.title, "blocks": question_blocks(project, q)}
+            for q in project.unique_questions if q.status == "open"]
+
+
+def cmd_docs_ready(root: Path, args: argparse.Namespace) -> int:
+    project = load_project(root)
+    problems = docs_ready_problems(project)
+    open_list = open_questions(project)
+    if args.json:
+        emit_json({"sufficient": not problems, "errors": [d.as_json() for d in problems], "open_questions": open_list})
+    else:
+        for diagnostic in problems:
+            print(diagnostic.render())
+        print("sufficient" if not problems else f"not sufficient: {len(problems)} problem{'s' if len(problems) != 1 else ''}")
+        for question in open_list:
+            print(f"open: {question['id']} {question['title']} (blocks: {', '.join(question['blocks']) or 'nothing'})")
+    return 1 if problems else 0
+
+
 def cmd_plan(root: Path, args: argparse.Namespace) -> int:
     entries = plan_entries(load_project(root))
     if args.json:
@@ -1920,7 +2095,7 @@ def cmd_index(root: Path, args: argparse.Namespace) -> int:
 
 
 def cmd_set_status(root: Path, args: argparse.Namespace) -> int:
-    print(set_status(root, args.id, args.status, args.evidence))
+    print("\n".join(set_status(root, args.ids, args.status, args.evidence)))
     return 0
 
 
@@ -1928,6 +2103,14 @@ def cmd_sync_plan(root: Path, args: argparse.Namespace) -> int:
     tracker_map = load_tracker_map(root, args.tracker)
     items, _ = load_backlog(root)
     for op in sync_plan(items, tracker_map):
+        print(json.dumps(op, ensure_ascii=False))
+    return 0
+
+
+def cmd_sync_expect(root: Path, args: argparse.Namespace) -> int:
+    tracker_map = load_tracker_map(root, args.tracker)
+    items, _ = load_backlog(root)
+    for op in sync_expect(items, tracker_map):
         print(json.dumps(op, ensure_ascii=False))
     return 0
 
@@ -1964,13 +2147,15 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--only", metavar="GROUP[,GROUP]", help=f"groups to run: {', '.join(GROUPS)}")
     check.add_argument("--json", action="store_true")
     command("plan", cmd_plan, "Print the planned documents with their areas and inputs.").add_argument("--json", action="store_true")
+    command("docs-ready", cmd_docs_ready, "Say whether the documentation is sufficient to plan the backlog.").add_argument("--json", action="store_true")
     command("ready", cmd_ready, "Print ready, can-become-ready and wrongly-ready items by lane.").add_argument("--json", action="store_true")
     command("index", cmd_index, "Write docs/README.md and backlog/README.md.")
-    status = command("set-status", cmd_set_status, "Rewrite one backlog item's status.")
-    status.add_argument("id")
+    status = command("set-status", cmd_set_status, "Rewrite the status of one or more backlog items.")
+    status.add_argument("ids", nargs="+", metavar="ID")
     status.add_argument("status")
     status.add_argument("--evidence", metavar="TEXT")
     command("sync-plan", cmd_sync_plan, "Print tracker operations as JSON lines.").add_argument("tracker")
+    command("sync-expect", cmd_sync_expect, "Print what the tracker holds for each unchanged mapped item.").add_argument("tracker")
     record = command("sync-record", cmd_sync_record, "Record one tracker result in the map.")
     record.add_argument("tracker")
     action = record.add_mutually_exclusive_group(required=True)

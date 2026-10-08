@@ -21,16 +21,11 @@
 <!-- mirage:section scenarios -->
 ## Scenario IDs
 
-{{State that every specialist document, such as an integration, a domain rule set or the payments document, ends with a table of test scenarios. State the ID form <AREA>-T<NN>, where AREA is the requirement area code from docs/prd.md's areas table and NN counts up from 01 within that area, for example PAY-T01. State that a scenario this test strategy owns directly, not tied to one specialist document, uses the area TS.}}
+{{State that every specialist document, such as an integration, a domain rule set or the payments document, ends with a table of test scenarios. State the ID form <AREA>-T<NN>, where AREA is the requirement area code from docs/prd.md's areas table and NN counts up from 01 in one sequence per area across every document, for example PAY-T01, so two documents that share an area never reuse a number. State that a scenario this test strategy owns directly, not tied to one specialist document, uses the area TS.}}
 
 | ID | Scenario | Expected |
 |---|---|---|
 | {{TS-T01}} | {{The situation under test, in one sentence}} | {{What must happen}} |
-
-<!-- mirage:section done -->
-## Definition of done
-
-{{State what a story needs before its status can become done: which test levels passed, which scenario IDs it closes, and whether a person must also sign off.}}
 
 <!-- mirage:section evidence -->
 ## Evidence

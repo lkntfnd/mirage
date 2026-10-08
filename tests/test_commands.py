@@ -9,9 +9,16 @@ from pathlib import Path
 from typing import List
 from unittest import mock
 
-from support import FIXTURE, catalog_doc, check, delete, edit, edit_json, facets, fixture_copy, project, run, synthetic_catalog, write
+from support import (
+    FIXTURE, append, catalog_doc, check, delete, edit, edit_json, facets, fixture_copy, project, run,
+    synthetic_catalog, write,
+)
 
 S02 = "backlog/M1-E01-S02-cancel-booking.md"
+DRAFT = "backlog/M2-E01-S02-reschedule.md"
+DRAFT_ID = "M2-E01-S02"
+BLOCKED_TASK = "backlog/M1-E02-S01-T01-stock-client.md"
+FAKE_AWS_KEY = "AKIA" + "Q" * 16
 S02_TEXT = """---
 id: M1-E01-S02
 title: Cancel a booking
@@ -26,10 +33,49 @@ labels: [area:mobile, "type:feature"]
 estimate: 2
 ---
 
+<!-- mirage:section context -->
+## Context
+
+A customer who cannot come frees the slot for someone else (REQ-BOOK-002).
+
+<!-- mirage:section acceptance -->
 ## Acceptance criteria
 
 - [ ] A customer cancels up to two hours before the slot.
 - [ ] A later cancellation is refused with a reason.
+
+<!-- mirage:section verification -->
+## Verification
+
+API test T-BOOK-03 and the cancel flow in the app test suite.
+
+<!-- mirage:section out-of-scope -->
+## Out of scope
+
+Refunds; the app takes no payments.
+"""
+DRAFT_LABELS = "labels: [area:mobile]"
+DRAFT_REQ = "\nreq: [REQ-BOOK-002]"
+DRAFT_BODY = "## Acceptance criteria\n\n- [ ] A customer moves a booking to a free slot.\n"
+SECTIONS = """<!-- mirage:section context -->
+## Context
+
+Why the item exists.
+
+<!-- mirage:section acceptance -->
+## Acceptance criteria
+
+- [ ] A customer moves a booking to a free slot.
+
+<!-- mirage:section verification -->
+## Verification
+
+A test proves it.
+
+<!-- mirage:section out-of-scope -->
+## Out of scope
+
+Nothing is excluded.
 """
 
 
@@ -47,10 +93,11 @@ class Ready(unittest.TestCase):
     maxDiff = None
 
     def test_fixture_groups_by_lane(self):
+        # M2-E01-S02 has its prerequisites met but no body sections yet, so it cannot become ready.
         self.assertEqual(ready_json(FIXTURE), [
             {"lane": "mobile",
              "ready_now": [{"id": "M1-E01-S02", "title": "Cancel a booking", "status": "ready"}],
-             "can_become_ready": [{"id": "M2-E01-S02", "title": "Move a booking to another slot", "status": "draft"}],
+             "can_become_ready": [],
              "wrongly_ready": []},
         ])
 
@@ -60,15 +107,16 @@ class Ready(unittest.TestCase):
             "  ready now\n"
             "    M1-E01-S02 Cancel a booking\n"
             "  can become ready\n"
-            "    M2-E01-S02 Move a booking to another slot (draft)\n"
+            "    none\n"
             "  wrongly ready\n"
             "    none\n"
         ), ""))
 
     def test_a_blocked_reason_keeps_an_item_out_of_can_become_ready(self):
         with fixture_copy() as root:
-            edit("backlog/M1-E02-S01-T01-stock-client.md",
+            edit(BLOCKED_TASK,
                  "\nblocked_reason: Waiting for Sprocket Supply to enable the stock endpoint in the sandbox.", "")(root)
+            edit(BLOCKED_TASK, "- [ ] Client with timeouts and retries.\n", SECTIONS)(root)
             backend = lane(root, "backend")
         self.assertEqual(backend, {
             "lane": "backend", "ready_now": [], "wrongly_ready": [],
@@ -84,11 +132,51 @@ class Ready(unittest.TestCase):
             "unmet": ["Q-012 is open", "IN-002 is missing"],
         }])
 
-    def test_can_become_ready_needs_a_checklist_item(self):
+    def test_can_become_ready_needs_every_required_section_complete(self):
+        listed = [{"id": "M2-E01-S02", "title": "Move a booking to another slot", "status": "draft"}]
         with fixture_copy() as root:
-            edit("backlog/M2-E01-S02-reschedule.md", "- [ ] A customer moves", "A customer moves")(root)
-            mobile = lane(root, "mobile")
-        self.assertEqual(mobile["can_become_ready"], [])
+            edit(DRAFT, DRAFT_LABELS, DRAFT_LABELS + DRAFT_REQ)(root)
+            edit(DRAFT, DRAFT_BODY, SECTIONS)(root)
+            self.assertEqual(lane(root, "mobile")["can_become_ready"], listed)
+        with fixture_copy() as root:
+            edit(DRAFT, DRAFT_LABELS, DRAFT_LABELS + DRAFT_REQ)(root)
+            edit(DRAFT, DRAFT_BODY, SECTIONS.replace("A test proves it.\n\n", ""))(root)
+            self.assertEqual(lane(root, "mobile")["can_become_ready"], [])
+        with fixture_copy() as root:
+            edit(DRAFT, DRAFT_LABELS, DRAFT_LABELS + DRAFT_REQ)(root)
+            edit(DRAFT, DRAFT_BODY, SECTIONS.replace("- [ ] A customer moves", "A customer moves"))(root)
+            self.assertEqual(lane(root, "mobile")["can_become_ready"], [])
+        with fixture_copy() as root:
+            edit(DRAFT, DRAFT_LABELS, DRAFT_LABELS + DRAFT_REQ)(root)
+            edit(DRAFT, DRAFT_BODY, SECTIONS.replace("<!-- mirage:section out-of-scope -->\n", ""))(root)
+            self.assertEqual(lane(root, "mobile")["can_become_ready"], [])
+
+    def test_a_feature_story_needs_a_requirement_to_become_ready(self):
+        listed = [{"id": "M2-E01-S02", "title": "Move a booking to another slot", "status": "draft"}]
+        with fixture_copy() as root:
+            edit(DRAFT, DRAFT_BODY, SECTIONS)(root)
+            self.assertEqual(lane(root, "mobile")["can_become_ready"], [])
+        # A chore story proves no requirement, so it needs none.
+        with fixture_copy() as root:
+            edit(DRAFT, DRAFT_LABELS, DRAFT_LABELS + "\nkind: chore")(root)
+            edit(DRAFT, DRAFT_BODY, SECTIONS)(root)
+            self.assertEqual(lane(root, "mobile")["can_become_ready"], listed)
+
+    def test_a_spike_can_start_on_the_open_question_it_answers(self):
+        listed = [{"id": "M2-E01-S02", "title": "Move a booking to another slot", "status": "draft"}]
+        with fixture_copy() as root:
+            edit(DRAFT, DRAFT_LABELS, DRAFT_LABELS + "\nkind: spike\nquestions: [Q-012]")(root)
+            edit(DRAFT, DRAFT_BODY, SECTIONS)(root)
+            self.assertEqual(lane(root, "mobile")["can_become_ready"], listed)
+            edit(DRAFT, "status: draft", "status: ready")(root)
+            self.assertEqual(lane(root, "mobile")["wrongly_ready"], [])
+            self.assertEqual(run("check", "--root", root, "--only", "backlog"), (0, "ok\n", ""))
+
+    def test_unmet_prerequisites_keep_an_item_with_complete_sections_out_of_can_become_ready(self):
+        with fixture_copy() as root:
+            edit(DRAFT, DRAFT_BODY, SECTIONS)(root)
+            edit(DRAFT, DRAFT_LABELS, DRAFT_LABELS + DRAFT_REQ + "\nquestions: [Q-012]")(root)
+            self.assertEqual(lane(root, "mobile")["can_become_ready"], [])
 
     def test_a_task_inherits_its_story_prerequisites(self):
         with fixture_copy() as root:
@@ -199,8 +287,8 @@ Status: in-progress.
 
 | ID | Title | Status | Lane | Blockers |
 |---|---|---|---|---|
-| M1-E01-S01 | Print | blocked | core | - |
-| M1-E01-S01-T01 | Driver | draft | core | M1-E01-S01 |
+| M1-E01-S01 | Print | blocked | core | Q-001 |
+| M1-E01-S01-T01 | Driver | draft | core | M1-E01-S01, Q-001 |
 
 ## M2
 
@@ -251,7 +339,7 @@ class Index(unittest.TestCase):
             stale = run("check", "--root", root, "--only", "index")
             run("index", "--root", root)
             counts = (root / "docs/README.md").read_text(encoding="utf-8").split("\n")
-        self.assertEqual(stale, (1, "docs/README.md:57: index-stale: the generated file differs from what index writes; run index\n1 error\n", ""))
+        self.assertEqual(stale, (1, "docs/README.md:61: index-stale: the generated file differs from what index writes; run index\n1 error\n", ""))
         self.assertIn("| ADRs | 2 |", counts)
 
     def test_exists_column_follows_the_files(self):
@@ -289,6 +377,20 @@ class SetStatus(unittest.TestCase):
         self.assertIn('evidence: "\\"quoted\\" start"\n', text)
         self.assertNotIn("merge 4be81c0", text)
 
+    def test_several_items_change_in_one_call(self):
+        with fixture_copy() as root:
+            result = run("set-status", "M1-E01-S02", DRAFT_ID, "M1-E01-S02", "blocked", "--root", root)
+            texts = [(root / path).read_text(encoding="utf-8") for path in (S02, DRAFT)]
+        self.assertEqual(result, (0, "M1-E01-S02: ready -> blocked\nM2-E01-S02: draft -> blocked\n", ""))
+        self.assertEqual([text.split("\n")[3] for text in texts], ["status: blocked", "status: blocked"])
+
+    def test_one_refused_item_leaves_every_item_unchanged(self):
+        with fixture_copy() as root:
+            result = run("set-status", "M1-E01-S02", "M9-E01-S01", "blocked", "--root", root)
+            text = (root / S02).read_text(encoding="utf-8")
+        self.assertEqual(result, (2, "", "error: M9-E01-S01 has no file in backlog/\n"))
+        self.assertEqual(text, S02_TEXT)
+
     def test_done_without_evidence_is_refused(self):
         with fixture_copy() as root:
             result = run("set-status", "M1-E01-S02", "done", "--root", root)
@@ -323,8 +425,21 @@ def plan_ops(root: Path) -> List[dict]:
     return [json.loads(line) for line in out.splitlines()]
 
 
-def digest(root: Path, rel: str) -> str:
-    return hashlib.sha256((root / rel).read_bytes()).hexdigest()
+def payload_hash(op: dict) -> str:
+    """The contract's hash, computed here on its own: SHA-256 of the canonical JSON of the payload fields."""
+    fields = {key: value for key, value in op.items() if key not in ("op", "hash", "remote_id")}
+    text = json.dumps(fields, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def expect_ops(root: Path, tracker: str = "plane") -> List[dict]:
+    code, out, err = run("sync-expect", tracker, "--root", root)
+    assert code == 0, err
+    return [json.loads(line) for line in out.splitlines()]
+
+
+def plan_hashes(root: Path) -> dict:
+    return {op["id"]: op["hash"] for op in plan_ops(root) if op["op"] == "create"}
 
 
 ALL_IDS = [
@@ -348,32 +463,98 @@ class SyncPlan(unittest.TestCase):
         ops = plan_ops(FIXTURE)
         self.assertEqual([(op["op"], op["id"]) for op in ops], [("create", item_id) for item_id in ALL_IDS])
 
-    def test_create_carries_the_item_fields(self):
+    def test_a_story_create_carries_the_item_fields(self):
         ops = {op["id"]: op for op in plan_ops(FIXTURE)}
-        self.assertEqual(ops["M1-E01-S02"], {
+        story = ops["M1-E01-S02"]
+        self.assertEqual(story, {
             "op": "create",
             "id": "M1-E01-S02",
             "level": "story",
-            "title": "Cancel a booking",
+            "title": "M1-E01-S02 Cancel a booking",
             "status": "ready",
             "priority": "medium",
-            "labels": ["area:mobile", "type:feature"],
+            "labels": ["area:mobile", "type:feature", "scope:should", "release:v1.0"],
             "estimate": 2,
+            "due": None,
             "milestone": "M1",
             "epic": "E01",
             "parent": "E01",
-            "body": "## Acceptance criteria\n\n- [ ] A customer cancels up to two hours before the slot.\n"
-                    "- [ ] A later cancellation is refused with a reason.\n\nmirage-id: M1-E01-S02",
-            "hash": digest(FIXTURE, S02),
+            "body": "## Context\n\nA customer who cannot come frees the slot for someone else (REQ-BOOK-002).\n\n"
+                    "## Acceptance criteria\n\n- [ ] A customer cancels up to two hours before the slot.\n"
+                    "- [ ] A later cancellation is refused with a reason.\n\n"
+                    "## Verification\n\nAPI test T-BOOK-03 and the cancel flow in the app test suite.\n\n"
+                    "## Out of scope\n\nRefunds; the app takes no payments.\n\n"
+                    "---\nRequirements: REQ-BOOK-002\nQuestions: Q-007\nBlocked by: M1-E01-S01\nmirage-id: M1-E01-S02",
+            "hash": payload_hash(story),
         })
-        self.assertEqual(
-            {key: ops["M1-E02-S01-T01"][key] for key in ("level", "priority", "estimate", "milestone", "epic", "parent")},
-            {"level": "task", "priority": None, "estimate": 3, "milestone": "M1", "epic": "E02", "parent": "M1-E02-S01"},
-        )
-        self.assertEqual(
-            {key: ops["E01"][key] for key in ("level", "milestone", "epic", "parent", "estimate")},
-            {"level": "epic", "milestone": None, "epic": None, "parent": None, "estimate": None},
-        )
+
+    def test_a_task_create_takes_the_scope_and_release_of_its_story(self):
+        task = {op["id"]: op for op in plan_ops(FIXTURE)}["M1-E01-S01-T01"]
+        self.assertEqual(task, {
+            "op": "create",
+            "id": "M1-E01-S01-T01",
+            "level": "task",
+            "title": "M1-E01-S01-T01 Slot and booking endpoints",
+            "status": "done",
+            "priority": None,
+            "labels": ["area:backend", "scope:must", "release:v1.0"],
+            "estimate": 3,
+            "due": None,
+            "milestone": "M1",
+            "epic": "E01",
+            "parent": "M1-E01-S01",
+            "body": "## Context\n\nThe server side of the booking story.\n\n"
+                    "## Acceptance criteria\n\n- [x] Slots endpoint.\n- [x] Booking endpoint with an idempotency key.\n\n"
+                    "## Verification\n\nAPI tests T-BOOK-01 and T-BOOK-02.\n\n"
+                    "## Out of scope\n\nCancelling a booking.\n\n"
+                    "---\nEvidence: merge 9a3d2f1, CI run 198 green\nmirage-id: M1-E01-S01-T01",
+            "hash": payload_hash(task),
+        })
+
+    def test_a_milestone_create_carries_its_due_date_and_no_derived_labels(self):
+        milestone = {op["id"]: op for op in plan_ops(FIXTURE)}["M1"]
+        self.assertEqual(milestone, {
+            "op": "create",
+            "id": "M1",
+            "level": "milestone",
+            "title": "M1 Booking launch",
+            "status": "in-progress",
+            "priority": None,
+            "labels": [],
+            "estimate": None,
+            "due": "2026-11-02",
+            "milestone": None,
+            "epic": None,
+            "parent": None,
+            "body": "Booking and stock checks for the first release.\n\n- [ ] Every v1.0 story is done.\n\n---\nmirage-id: M1",
+            "hash": payload_hash(milestone),
+        })
+
+    def test_every_hash_is_the_sha256_of_the_canonical_payload(self):
+        ops = plan_ops(FIXTURE)
+        self.assertEqual(len(ops), len(ALL_IDS))
+        for op in ops:
+            with self.subTest(id=op["id"]):
+                self.assertEqual(op["hash"], payload_hash(op))
+        self.assertEqual(len({op["hash"] for op in ops}), len(ops))
+
+    def test_the_footer_lists_the_non_empty_fields_in_order_and_markers_are_stripped(self):
+        with fixture_copy() as root:
+            edit(S02, "estimate: 2", "estimate: 2\ninputs: [IN-001]\nevidence: spec reviewed")(root)
+            write("backlog/M1-E01-S03-fenced.md", "---\nid: M1-E01-S03\ntitle: Fenced\nstatus: draft\npriority: low\n"
+                  "scope: may\nrelease: v1.1\nlabels: [area:mobile]\n---\n\n  <!-- mirage:section context -->  \n"
+                  "Text <!-- mirage:section context --> stays.\n<!-- not mirage -->\n")(root)
+            ops = {op["id"]: op for op in plan_ops(root)}
+        self.assertTrue(ops["M1-E01-S02"]["body"].endswith(
+            "\n\n---\nRequirements: REQ-BOOK-002\nQuestions: Q-007\nInputs: IN-001\nBlocked by: M1-E01-S01\n"
+            "Evidence: spec reviewed\nmirage-id: M1-E01-S02"))
+        self.assertEqual(ops["M1-E01-S03"]["body"],
+                         "Text <!-- mirage:section context --> stays.\n<!-- not mirage -->\n\n---\nmirage-id: M1-E01-S03")
+        self.assertEqual(ops["M1-E01-S03"]["labels"], ["area:mobile", "type:feature", "scope:may", "release:v1.1"])
+
+    def test_a_spike_story_labels_use_its_kind(self):
+        ops = {op["id"]: op for op in plan_ops(FIXTURE)}
+        self.assertEqual(ops["M1-E02-S02"]["labels"], ["area:backend", "type:spike", "scope:must", "release:v1.0"])
 
     def test_recording_every_result_converges_to_no_operations(self):
         with fixture_copy() as root:
@@ -390,20 +571,48 @@ class SyncPlan(unittest.TestCase):
             run("sync-record", "plane", "--root", root, "--id", "M1-E01-S02", "--remote-id", "r6")
             self.assertEqual(run("sync-plan", "plane", "--root", root), (0, "", ""))
 
+    def test_changing_only_a_story_release_updates_the_story_and_each_of_its_tasks(self):
+        with fixture_copy() as root:
+            record_all(root)
+            run("sync-record", "plane", "--root", root, "--link", "M1-E01-S02", "M1-E01-S01")
+            edit("backlog/M1-E01-S01-book-a-slot.md", "release: v1.0", "release: v1.1")(root)
+            ops = plan_ops(root)
+            self.assertEqual([(op["op"], op["id"], op["remote_id"], op["labels"]) for op in ops], [
+                ("update", "M1-E01-S01", "r5", ["area:mobile", "area:backend", "type:feature", "scope:must", "release:v1.1"]),
+                ("update", "M1-E01-S01-T01", "r12", ["area:backend", "scope:must", "release:v1.1"]),
+                ("update", "M1-E01-S01-T02", "r13", ["area:mobile", "scope:must", "release:v1.1"]),
+            ])
+            for op in ops:
+                run("sync-record", "plane", "--root", root, "--id", op["id"], "--remote-id", op["remote_id"])
+            self.assertEqual(run("sync-plan", "plane", "--root", root), (0, "", ""))
+
+    def test_changing_only_a_milestone_due_date_updates_the_milestone(self):
+        with fixture_copy() as root:
+            record_all(root)
+            run("sync-record", "plane", "--root", root, "--link", "M1-E01-S02", "M1-E01-S01")
+            edit("backlog/M1-booking-launch.md", "due: 2026-11-02", "due: 2026-11-09")(root)
+            ops = plan_ops(root)
+        self.assertEqual([(op["op"], op["id"], op["due"], op["remote_id"]) for op in ops], [("update", "M1", "2026-11-09", "r1")])
+
     def test_forgetting_an_orphan_converges(self):
         with fixture_copy() as root:
             record_all(root)
             run("sync-record", "plane", "--root", root, "--link", "M1-E01-S02", "M1-E01-S01")
-            delete("backlog/M1-E01-S01-book-a-slot.md")(root)
+            for rel in ("book-a-slot", "T01-slot-api", "T02-slot-screen"):
+                delete(f"backlog/M1-E01-S01-{rel}.md")(root)
             self.assertEqual([(op["op"], op.get("id") or (op["from"], op["to"])) for op in plan_ops(root)], [
                 ("unlink", ("M1-E01-S02", "M1-E01-S01")),
                 ("orphan", "M1-E01-S01"),
+                ("orphan", "M1-E01-S01-T01"),
+                ("orphan", "M1-E01-S01-T02"),
             ])
             self.assertEqual(run("sync-record", "plane", "--root", root, "--forget", "M1-E01-S01"),
                              (0, "forgot M1-E01-S01\n", ""))
+            run("sync-record", "plane", "--root", root, "--forget", "M1-E01-S01-T01")
+            run("sync-record", "plane", "--root", root, "--forget", "M1-E01-S01-T02")
             self.assertEqual(run("sync-plan", "plane", "--root", root), (0, "", ""))
             data = json.loads((root / ".mirage/trackers/plane.json").read_text(encoding="utf-8"))
-        self.assertNotIn("M1-E01-S01", data["items"])
+        self.assertEqual(sorted(data["items"], key=ALL_IDS.index), [i for i in ALL_IDS if not i.startswith("M1-E01-S01")])
         self.assertEqual(data["links"], [])
 
     def test_operations_come_in_dependency_order(self):
@@ -436,15 +645,14 @@ class SyncRecord(unittest.TestCase):
                          "--key", "HL-7", "--url", "https://tracker.invalid/HL-7")
             run("sync-record", "plane", "--root", root, "--id", "M1", "--remote-id", "m1")
             text = (root / ".mirage/trackers/plane.json").read_text(encoding="utf-8")
-            expected_hash = digest(root, S02)
+            hashes = plan_hashes(FIXTURE)
         self.assertEqual(result, (0, "recorded M1-E01-S02 as a1b2\n", ""))
         self.assertEqual(json.loads(text), {
             "tracker": "plane",
             "items": {
-                "M1": {"remote_id": "m1", "key": None, "url": None, "hash": digest(FIXTURE, "backlog/M1-booking-launch.md"),
-                       "status": "in-progress"},
+                "M1": {"remote_id": "m1", "key": None, "url": None, "hash": hashes["M1"], "status": "in-progress"},
                 "M1-E01-S02": {"remote_id": "a1b2", "key": "HL-7", "url": "https://tracker.invalid/HL-7",
-                               "hash": expected_hash, "status": "ready"},
+                               "hash": hashes["M1-E01-S02"], "status": "ready"},
             },
             "links": [],
         })
@@ -528,6 +736,257 @@ class SyncRecord(unittest.TestCase):
                     run("sync-record", "plane", "--root", root, "--id", "M2", "--remote-id", "m2")
             self.assertEqual((folder / "plane.json").read_bytes(), before)
             self.assertEqual(sorted(p.name for p in folder.iterdir()), ["plane.json"])
+
+
+OPEN_Q012 = "open: Q-012 Which reminders does the app send? (blocks: M2-E01-S01, REQ-NOTE-001)\n"
+PLACEHOLDER = "docs/security.md:33: doc-placeholder: the line holds a {{ placeholder; write the content or cite a question\n"
+MISSING_PERFORMANCE = ("docs/performance.md: doc-missing: Performance (performance) is missing; "
+                       "it is planned because components include mobile-app, backend-service\n")
+
+
+def docs_ready_json(root: Path) -> tuple:
+    code, out, _ = run("docs-ready", "--root", root, "--json")
+    return code, json.loads(out)
+
+
+def all_requirements_out(root: Path) -> None:
+    path = root / "docs/prd.md"
+    text = path.read_text(encoding="utf-8")
+    for scope in ("MUST", "SHOULD", "MAY"):
+        text = text.replace(f"| {scope} |", "| OUT |")
+    path.write_text(text, encoding="utf-8")
+
+
+class DocsReady(unittest.TestCase):
+    maxDiff = None
+
+    def test_the_fixture_is_sufficient_and_lists_its_open_question(self):
+        self.assertEqual(run("docs-ready", "--root", FIXTURE), (0, "sufficient\n" + OPEN_Q012, ""))
+
+    def test_json_shape(self):
+        self.assertEqual(docs_ready_json(FIXTURE), (0, {
+            "sufficient": True,
+            "errors": [],
+            "open_questions": [
+                {"id": "Q-012", "title": "Which reminders does the app send?", "blocks": ["M2-E01-S01", "REQ-NOTE-001"]},
+            ],
+        }))
+
+    def test_json_shape_when_not_sufficient(self):
+        with fixture_copy() as root:
+            append("docs/security.md", "Escalation contact: {{contact}}\n")(root)
+            all_requirements_out(root)
+            result = docs_ready_json(root)
+        self.assertEqual(result, (1, {
+            "sufficient": False,
+            "errors": [
+                {"path": "docs/prd.md", "line": None, "code": "prd-empty", "message": "no requirement is in scope"},
+                {"path": "docs/security.md", "line": 33, "code": "doc-placeholder",
+                 "message": "the line holds a {{ placeholder; write the content or cite a question"},
+            ],
+            "open_questions": [
+                {"id": "Q-012", "title": "Which reminders does the app send?", "blocks": ["M2-E01-S01", "REQ-NOTE-001"]},
+            ],
+        }))
+
+    def test_a_removed_planned_document_is_reported(self):
+        with fixture_copy() as root:
+            delete("docs/performance.md")(root)
+            result = run("docs-ready", "--root", root)
+        self.assertEqual(result, (1, MISSING_PERFORMANCE + "not sufficient: 1 problem\n" + OPEN_Q012, ""))
+
+    def test_a_placeholder_is_reported(self):
+        with fixture_copy() as root:
+            append("docs/security.md", "Escalation contact: {{contact}}\n")(root)
+            result = run("docs-ready", "--root", root)
+        self.assertEqual(result, (1, PLACEHOLDER + "not sufficient: 1 problem\n" + OPEN_Q012, ""))
+
+    def test_an_uncovered_area_is_reported(self):
+        with fixture_copy() as root:
+            edit("docs/questions.md", "notifications/caps, ", "")(root)
+            result = run("docs-ready", "--root", root)
+        self.assertEqual(result, (1, (
+            "docs/questions.md: coverage-area: no question covers notifications/caps: "
+            "How many messages a user may receive per day or week.\n"
+            "not sufficient: 1 problem\n" + OPEN_Q012
+        ), ""))
+
+    def test_a_prd_whose_only_requirements_are_out_of_scope_is_empty(self):
+        with fixture_copy() as root:
+            all_requirements_out(root)
+            result = run("docs-ready", "--root", root)
+            plain = run("check", "--root", root)
+        self.assertEqual(result, (1, "docs/prd.md: prd-empty: no requirement is in scope\n"
+                                     "not sufficient: 1 problem\n" + OPEN_Q012, ""))
+        self.assertEqual(plain, (0, "ok\n", ""))  # check never reports prd-empty
+
+    def test_an_audit_log_without_a_documents_entry_is_not_an_audit(self):
+        entry = "## 2026-09-25 Documents\n"
+        for heading in ("No audit has been run yet.\n", "## 2026-09-25 Backlog\n", "## Documents\n"):
+            with fixture_copy() as root:
+                edit("docs/audit-log.md", entry, heading)(root)
+                result = run("docs-ready", "--root", root)
+                plain = run("check", "--root", root)
+            self.assertEqual(result, (1, "docs/audit-log.md: audit-missing: no documents audit is recorded; run mirage-audit\n"
+                                         "not sufficient: 1 problem\n" + OPEN_Q012, ""), heading)
+            self.assertEqual(plain, (0, "ok\n", ""))  # check never reports audit-missing
+        with fixture_copy() as root:
+            edit("docs/audit-log.md", entry, "## 2026-09-25 Documents and backlog\n")(root)
+            self.assertEqual(run("docs-ready", "--root", root), (0, "sufficient\n" + OPEN_Q012, ""))
+
+    def test_a_prd_without_any_requirement_row_is_empty(self):
+        with fixture_copy() as root:
+            path = root / "docs/prd.md"
+            lines = path.read_text(encoding="utf-8").split("\n")
+            path.write_text("\n".join(line for line in lines if not line.startswith("| REQ-") and not line.startswith("| `REQ-")),
+                            encoding="utf-8")
+            result = run("docs-ready", "--root", root)
+        self.assertEqual(result[0], 1)
+        self.assertIn("docs/prd.md: prd-empty: no requirement is in scope\n", result[1])
+
+    def test_problems_are_counted_and_sorted_by_path(self):
+        with fixture_copy() as root:
+            delete("docs/performance.md")(root)
+            append("docs/security.md", "Escalation contact: {{contact}}\n")(root)
+            result = run("docs-ready", "--root", root)
+        self.assertEqual(result, (1, MISSING_PERFORMANCE + PLACEHOLDER + "not sufficient: 2 problems\n" + OPEN_Q012, ""))
+
+    def test_open_questions_never_change_the_exit_code_and_show_an_empty_blocks_field_as_nothing(self):
+        with fixture_copy() as root:
+            edit("docs/questions.md", "### Q-004 How is the product tested?\n\n- Status: answered",
+                 "### Q-004 How is the product tested?\n\n- Status: open")(root)
+            text = run("docs-ready", "--root", root)
+            code, data = docs_ready_json(root)
+        self.assertEqual(text, (0, "sufficient\nopen: Q-004 How is the product tested? (blocks: nothing)\n" + OPEN_Q012, ""))
+        self.assertEqual((code, [q["blocks"] for q in data["open_questions"]]), (0, [[], ["M2-E01-S01", "REQ-NOTE-001"]]))
+
+    def test_nothing_after_the_verdict_when_no_question_is_open(self):
+        with fixture_copy() as root:
+            edit("docs/questions.md", "- Status: open", "- Status: answered\n- Answer: Dropped. Answered on 2026-09-25.")(root)
+            self.assertEqual(run("docs-ready", "--root", root), (0, "sufficient\n", ""))
+
+    def test_a_broken_backlog_does_not_change_the_output(self):
+        with fixture_copy() as root:
+            before = run("docs-ready", "--root", root)
+            edit(DRAFT, "labels: [area:mobile]", "labels: [area:mobile]\nblocked_by: [M9-E01-S09]")(root)
+            append(DRAFT, f"Needs Q-404, see [notes](missing.md). Key: {FAKE_AWS_KEY}\n")(root)
+            write("backlog/notes.md", "Loose notes.\n")(root)
+            edit("docs/prd.md", "| MUST | v1.1 |", "| MUST | v1.0 |")(root)
+            append("backlog/README.md", "Hand-edited note.\n")(root)
+            edit("backlog/M1-E01-S02-cancel-booking.md", "questions: [Q-007]", "questions: [Q-012]")(root)
+            after = run("docs-ready", "--root", root)
+            problems = {e["code"] for e in json.loads(run("check", "--root", root, "--json")[1])["errors"]}
+        self.assertEqual(before, (0, "sufficient\n" + OPEN_Q012, ""))
+        # The verdict holds. The open question now also names the story that was made to list it.
+        self.assertEqual(after, (0, "sufficient\n" + OPEN_Q012.replace("REQ-NOTE-001)", "REQ-NOTE-001, M1-E01-S02)"), ""))
+        self.assertEqual(problems, {"backlog-filename", "backlog-ref", "coverage-req", "index-stale", "link-broken",
+                                    "ref-missing", "backlog-ready", "secret"})
+
+    def test_an_unreadable_project_is_a_usage_error(self):
+        with fixture_copy() as root:
+            write(".mirage/project.json", "{not json")(root)
+            code, out, err = run("docs-ready", "--root", root)
+        self.assertEqual((code, out), (2, ""))
+        self.assertTrue(err.startswith("error: cannot read .mirage/project.json:"), err)
+
+
+class SyncExpect(unittest.TestCase):
+    maxDiff = None
+
+    SORTED_IDS = [
+        "E01", "E02", "M1", "M1-E01-S01", "M1-E01-S01-T01", "M1-E01-S01-T02", "M1-E01-S02", "M1-E01-S04",
+        "M1-E02-S01", "M1-E02-S01-T01", "M1-E02-S02", "M2", "M2-E01-S01", "M2-E01-S02",
+    ]
+
+    def test_a_missing_or_empty_map_prints_nothing(self):
+        with fixture_copy() as root:
+            self.assertEqual(run("sync-expect", "plane", "--root", root), (0, "", ""))
+            write(".mirage/trackers/plane.json", {"tracker": "plane", "items": {}, "links": []})(root)
+            self.assertEqual(run("sync-expect", "plane", "--root", root), (0, "", ""))
+
+    def test_every_recorded_item_is_expected_exactly_as_it_was_pushed(self):
+        with fixture_copy() as root:
+            created = {op["id"]: op for op in plan_ops(root)}
+            record_all(root)
+            expected = expect_ops(root)
+        self.assertEqual([op["id"] for op in expected], self.SORTED_IDS)
+        remote = {item_id: f"r{number}" for number, item_id in enumerate(ALL_IDS, 1)}
+        for op in expected:
+            with self.subTest(id=op["id"]):
+                self.assertEqual(op, {**created[op["id"]], "op": "expect", "remote_id": remote[op["id"]]})
+
+    def test_a_story_is_printed_with_its_literal_payload(self):
+        with fixture_copy() as root:
+            record_all(root)
+            story = next(op for op in expect_ops(root) if op["id"] == "M1-E01-S02")
+        self.assertEqual(story, {
+            "op": "expect",
+            "id": "M1-E01-S02",
+            "level": "story",
+            "title": "M1-E01-S02 Cancel a booking",
+            "status": "ready",
+            "priority": "medium",
+            "labels": ["area:mobile", "type:feature", "scope:should", "release:v1.0"],
+            "estimate": 2,
+            "due": None,
+            "milestone": "M1",
+            "epic": "E01",
+            "parent": "E01",
+            "body": "## Context\n\nA customer who cannot come frees the slot for someone else (REQ-BOOK-002).\n\n"
+                    "## Acceptance criteria\n\n- [ ] A customer cancels up to two hours before the slot.\n"
+                    "- [ ] A later cancellation is refused with a reason.\n\n"
+                    "## Verification\n\nAPI test T-BOOK-03 and the cancel flow in the app test suite.\n\n"
+                    "## Out of scope\n\nRefunds; the app takes no payments.\n\n"
+                    "---\nRequirements: REQ-BOOK-002\nQuestions: Q-007\nBlocked by: M1-E01-S01\nmirage-id: M1-E01-S02",
+            "hash": payload_hash(story),
+            "remote_id": "r6",
+        })
+
+    def test_only_recorded_items_are_printed(self):
+        with fixture_copy() as root:
+            for item_id in ("M1-E01-S02", "M1"):
+                run("sync-record", "plane", "--root", root, "--id", item_id, "--remote-id", item_id.lower())
+            self.assertEqual([(op["id"], op["remote_id"]) for op in expect_ops(root)], [("M1", "m1"), ("M1-E01-S02", "m1-e01-s02")])
+
+    def test_an_edited_item_leaves_the_output_and_appears_as_an_update(self):
+        with fixture_copy() as root:
+            record_all(root)
+            run("sync-record", "plane", "--root", root, "--link", "M1-E01-S02", "M1-E01-S01")
+            edit(S02, "title: Cancel a booking", "title: Cancel a booked slot")(root)
+            ids = [op["id"] for op in expect_ops(root)]
+            plan = plan_ops(root)
+        self.assertEqual(ids, [i for i in self.SORTED_IDS if i != "M1-E01-S02"])
+        self.assertEqual([(op["op"], op["id"], op["title"], op["remote_id"]) for op in plan],
+                         [("update", "M1-E01-S02", "M1-E01-S02 Cancel a booked slot", "r6")])
+
+    def test_a_task_leaves_the_output_when_its_story_release_changes(self):
+        with fixture_copy() as root:
+            record_all(root)
+            edit("backlog/M1-E01-S01-book-a-slot.md", "release: v1.0", "release: v1.1")(root)
+            ids = [op["id"] for op in expect_ops(root)]
+        self.assertEqual(ids, [i for i in self.SORTED_IDS if not i.startswith("M1-E01-S01")])
+
+    def test_an_item_whose_file_is_gone_is_not_printed(self):
+        with fixture_copy() as root:
+            record_all(root)
+            delete("backlog/M2-E01-S02-reschedule.md")(root)
+            ids = [op["id"] for op in expect_ops(root)]
+        self.assertEqual(ids, [i for i in self.SORTED_IDS if i != "M2-E01-S02"])
+
+    def test_recording_an_item_again_brings_it_back(self):
+        with fixture_copy() as root:
+            record_all(root)
+            edit(S02, "title: Cancel a booking", "title: Cancel a booked slot")(root)
+            run("sync-record", "plane", "--root", root, "--id", "M1-E01-S02", "--remote-id", "r6")
+            story = next(op for op in expect_ops(root) if op["id"] == "M1-E01-S02")
+        self.assertEqual((story["title"], story["remote_id"]), ("M1-E01-S02 Cancel a booked slot", "r6"))
+
+    def test_an_unreadable_map_is_a_usage_error(self):
+        with fixture_copy() as root:
+            write(".mirage/trackers/plane.json", "{not json")(root)
+            code, out, err = run("sync-expect", "plane", "--root", root)
+        self.assertEqual((code, out), (2, ""))
+        self.assertTrue(err.startswith("error: cannot read .mirage/trackers/plane.json:"), err)
 
 
 if __name__ == "__main__":

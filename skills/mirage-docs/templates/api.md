@@ -55,4 +55,4 @@
 <!-- mirage:section contract -->
 ## Contract file
 
-{{Name the exact path of the machine-readable contract, for example {{docs/openapi.yaml}}, and state that it is the source of truth for the endpoint inventory above. State that the contract is versioned in the same commit as the code it describes, and that a contract test blocks a merge that would let them drift.}}
+{{Name the exact path of the machine-readable contract, such as an OpenAPI file under docs/, and state that it is the source of truth for the endpoint inventory above. State that the contract is versioned in the same commit as the code it describes, and that a contract test blocks a merge that would let them drift.}}
