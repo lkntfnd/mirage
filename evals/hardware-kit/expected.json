@@ -1,0 +1,18 @@
+{
+  "custom_components_min": 3,
+  "documents_min": 1,
+  "flags_true": [],
+  "integrations_include": [],
+  "docs_include": [
+    "prd",
+    "architecture",
+    "test-strategy",
+    "operations",
+    "agents",
+    "readme",
+    "summary",
+    "delivery",
+    "audit-log",
+    "compliance"
+  ]
+}

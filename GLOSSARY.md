@@ -9,8 +9,20 @@ The person who makes product decisions for the project being documented. Only th
 _Avoid_: user, client, stakeholder
 
 **Facet**:
-A property of the project that decides which documents and questions apply, such as "has a mobile app" or "takes payments".
+A property of the project that decides which documents and questions apply, such as "takes payments" or "has a command-line tool".
 _Avoid_: feature flag, project type
+
+**Component**:
+A part of the project that is built and delivered on its own, with an ID and a kind. The kind may be any slug.
+_Avoid_: module, app, service
+
+**Custom kind**:
+A component kind the catalog has no document of its own for. Its component gets a component specification.
+_Avoid_: unknown kind, other
+
+**Project document**:
+A document a project declares for itself in `project.json`, with its own outline and question areas, because the catalog has none for the subject.
+_Avoid_: custom doc, extra doc
 
 **Question**:
 A decision the owner must make, recorded in the register with an ID `Q-nnn`, an agent recommendation and a status.
@@ -35,7 +47,7 @@ _Avoid_: requirement, dependency, prerequisite
 ## Documents
 
 **Catalog**:
-The fixed list of document kinds mirage can write, each with the facets that require it and the question areas it must cover.
+The library of document kinds mirage knows, each with the facets that switch it on and the question areas it must cover. A project is not limited to it.
 _Avoid_: template list
 
 **Requirement**:
@@ -79,7 +91,7 @@ _Avoid_: todo list, sprint
 ## Delivery
 
 **Area**:
-A part of the product that one lane builds, such as `mobile`, `backend` or `infra`, declared per project and carried on items as an `area:<name>` label.
+A field of work that one lane owns, such as `backend`, `firmware` or `infra`, declared per project and carried on items as an `area:<name>` label.
 _Avoid_: component, module
 
 **Lane**:
@@ -87,5 +99,5 @@ The area an agent or person picks work from. An item with several areas names it
 _Avoid_: team, stream, assignee
 
 **Evidence**:
-A pointer that proves a claim, such as a commit SHA with its CI run, a test log or a file path. An item is done only with evidence.
+A pointer that proves a claim, such as a commit SHA with its CI run, a test log, or a dated record of a measurement or a delivery. An item is done only with evidence.
 _Avoid_: proof, receipt

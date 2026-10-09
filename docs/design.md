@@ -39,7 +39,9 @@ docs/
   specs/<component>/       one spec per screen or page
   integrations/<system>.md one spec per external system
   domain/<topic>.md        one spec per complex rule set
-  platforms/<kind>.md      one per mobile, desktop, extension, embedded or game component kind
+  platforms/<kind>.md      one per mobile, desktop, extension or game component kind
+  components/<id>.md       one per component of a kind the catalog has no document for
+  <project documents>.md   the documents the project declares for itself
   sources/                 preserved inputs and SHA256SUMS, when there are any
 backlog/
   README.md                generated index by milestone and epic
@@ -71,21 +73,23 @@ The backlog waits for the documentation (ADR 0010). `mirage-backlog` writes no i
 
 ## 3. Facets
 
-The first interview round settles `.mirage/project.json`:
+Mirage is not bound to particular kinds of project (ADR 0011). The first interview round starts from the owner's own description of what is being built and settles `.mirage/project.json`:
 
 - the project name
 - the document language, English by default
-- the components, each with a kind: website, web-app, mobile-app, desktop-app, browser-extension, backend-service, cli, library, data-pipeline, embedded or game
+- the components, each a part that is built and delivered on its own, with a kind. The kind may be any slug. The catalog has documents of its own for website, web-app, mobile-app, desktop-app, browser-extension, backend-service, cli, library, data-pipeline and game. A component of any other kind gets a component specification.
 - the flags, each true or false: accounts, personal data, payments, content edited by non-developers, several languages, analytics, notifications, search, offline use, realtime updates, AI features, admin tools, migration from an existing system, own file formats, source documents to preserve
 - three lists: third-party integrations, regulated regimes, and complex rule sets that need their own spec
 - the release names in order
-- the area labels that name the lanes, such as `mobile`, `backend` and `infra`
+- the area labels that name the lanes, such as `backend`, `firmware` and `infra`
+- the catalog documents to plan by name although no facet switched them on
+- the documents this project declares for itself, each with an outline and question areas
 
-Every later question and document hangs off these answers.
+The round ends with the plan in front of the owner and one question: what must be written down for this project that these documents do not hold? Every later question and document hangs off these answers.
 
 ## 4. Catalog
 
-The catalog is data in `skills/mirage/scripts/catalog.json`. It holds 42 document kinds. For each kind it names:
+The catalog is data in `skills/mirage/scripts/catalog.json`. It holds 43 document kinds. It is a library of what mirage already knows how to ask about, not a limit on what a project can document. For each kind it names:
 
 - the facet that switches it on
 - its path
@@ -96,6 +100,8 @@ The catalog is data in `skills/mirage/scripts/catalog.json`. It holds 42 documen
 [catalog.md](catalog.md) renders it for reading. `check.py plan` prints the documents a given project needs and why, so the skills never keep their own copy.
 
 Every project gets a README, an executive summary, the PRD, architecture, security, test strategy, operations, delivery conventions, agent rules, both registers, the generated index and an audit log. The delivery conventions document puts the item format, the status rules and the tracker rules inside the project, so the project stays usable by people and agents who do not have mirage installed.
+
+A component specification is the catalog's document for a part of any kind it does not know. It asks what the part is for, what crosses its boundary, where it runs or exists, how it is built and delivered, which targets it must meet, how that is proved and what is least understood. A project document is declared in `project.json` with its own sections and question areas. It has no template, and the validator covers and checks it like a catalog document.
 
 Specialist documents (integration, domain, payments, search and the like) share one shape. They open with the scope and the requirements they serve, state the contract, mark every tunable value as a hypothesis, name the admin controls, and end with a test-scenario table.
 
@@ -135,7 +141,7 @@ Statuses are `draft`, `blocked`, `ready`, `in-progress`, `in-review`, `done` and
 
 - **ready.** Every question is settled, every input is provided, every blocker is done, and the item has acceptance criteria.
 - **blocked.** The item names what blocks it.
-- **done.** The item carries evidence, such as a commit SHA with its CI run.
+- **done.** The item carries evidence, such as a commit SHA with its CI run, or a dated record for work no pipeline can check.
 
 A spike is a story that answers a question by trying something. The question it lists does not block it, and it cannot be done while that question is still open.
 
@@ -148,7 +154,7 @@ Estimates sit on a story or on its tasks, never both. [validator.md](validator.m
 `check.py` is one Python file using only the standard library. It has these commands:
 
 - `check` validates everything, and CI runs it.
-- `plan` prints the required documents and their coverage.
+- `plan` prints the required documents and their coverage, then the catalog documents the project could add by name.
 - `docs-ready` says whether the documentation is sufficient to plan the backlog, and lists the open questions. Sufficient means every planned document exists with no placeholder, every question area is covered, every reference and link resolves, the PRD has a requirement in scope, and the audit log records a documents audit.
 - `ready` prints what can start now per lane. It replaces the end-of-session unblock sweep.
 - `index` regenerates the two index files.
@@ -202,7 +208,7 @@ It reports findings with file and line, fixes mechanical ones, and leaves decisi
 
 ## 11. Evaluation
 
-Three invented projects live under `evals/`: a corporate website, a mobile app with a backend and an admin panel, and a command-line tool. A run passes only if four things hold after the agent delegates every answer:
+Four invented projects live under `evals/`: a corporate website, a mobile app with a backend and an admin panel, a command-line tool, and an open-hardware sensor kit whose parts are kinds the catalog has no document for. A run passes only if four things hold after the agent delegates every answer:
 
 - `check.py check` is clean.
 - Every planned document exists.
@@ -246,6 +252,27 @@ What these runs do not prove:
 - The second pass, which changes two answers, was not run.
 - No run synced to a tracker. The Plane adapter was checked against the tool definitions of a connected Plane server, and the Jira, GitHub and Linear adapters only against the vendors' documentation.
 
+### Run of 2026-10-09
+
+The `hardware-kit` evaluation tests ADR 0011 on a project that is not an application: a circuit board, a 3D-printed case and firmware, sold as a kit. One fresh agent ran it the same way as the runs above.
+
+| Evaluation | Result | Documents | Questions | Backlog items |
+|---|---|---|---|---|
+| `hardware-kit` | pass | 26, plus 6 screen specs | 114, of which 18 left open | 68 |
+
+The agent gave the board and the case kinds of its own, and both got a component specification. It included the UX document by name for the device's screen and button. It declared five project documents: a bill of materials, an assembly guide, measurement accuracy, production and shipping, and firmware design. The 18 questions it left open were the ones only a datasheet, a measurement or a test lab can settle.
+
+The run reported 17 points of friction and listed every place where a template or a skill assumed software. Fixed from it:
+
+- The `embedded` kind planned a document about app stores and device permissions for firmware. The kind is gone from the catalog, so firmware now gets a component specification.
+- Evidence was defined as a commit and its CI run. Work no pipeline can check now has a dated record as its evidence.
+- Lanes were described as the areas that build parts. They now count sourcing, compliance, production and other work that is not building.
+- A decision only a measurement or an outside ruling can settle had no rule. It now stays open and becomes a spike.
+- `ready` left out a lane with nothing ready. It now prints every lane.
+- The operations, test strategy, security and agent-rules templates say what to write when nothing is hosted, deployed or run in a pipeline.
+
+Left as they are: the UX, screen, compliance and platform templates still read as written for software, and a project of another kind fills them in its own terms or says why a section does not apply. The fixes above were checked against the generated project with the validator, and were not rerun end to end.
+
 ## 12. Build status
 
 Each step ends with a check that proves it.
@@ -257,5 +284,5 @@ Each step ends with a check that proves it.
 | Templates | the template structure test | done |
 | The six skills | `claude plugin validate --strict` and the evaluation runs | done |
 | Tracker adapters for Plane, Jira, GitHub Issues and Linear | a sync against a throwaway project in each tracker | written, not yet run against a live tracker |
-| All three evaluations | `evals/check_eval.py` | passed on 2026-10-08, with the limits listed in section 11 |
+| All four evaluations | `evals/check_eval.py` | passed on 2026-10-08 and 2026-10-09, with the limits listed in section 11 |
 | Release 0.1.0 | an install from the marketplace, and one sync against a live tracker | open |

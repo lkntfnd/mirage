@@ -1,10 +1,10 @@
 # Mirage
 
-Mirage turns a project idea into the documentation and backlog that coding agents need to build it without guessing.
+Mirage questions you about what you are building and the decisions behind it, then writes the documentation and the tasks that coding agents need to build it without guessing.
 
-It interviews you about the project and asks every question the project's documents need. It writes the full documentation set, which covers requirements with stable IDs, architecture, data, API, UX, security, operations, tests, delivery conventions and agent rules. Only when that documentation is sufficient does it plan milestones, epics, stories and tasks, as files in your repository. A bundled validator fails your CI when the docs and the plan drift apart.
+It works for any kind of project. It asks every question the project's documents need, and each question comes with a recommended answer. It writes the documentation set: requirements with stable IDs, architecture, security, tests, operations, delivery conventions, agent rules, a specification for each part being built, and whatever else this project must write down. Only when that documentation is sufficient does it plan milestones, epics, stories and tasks, as files in your repository that a tracker can show as a board. A bundled validator fails your CI when the docs and the plan drift apart.
 
-> **Status: pre-release.** The validator has a full test suite, and mirage passed its three end-to-end evaluations on 2026-10-08. The tracker adapters are written from each vendor's documentation and have not yet been run against a live tracker. [docs/design.md](docs/design.md) section 11 says what the evaluations do and do not prove.
+> **Status: pre-release.** The validator has a full test suite, and mirage passed its four end-to-end evaluations: a website, a mobile app with a backend, a command-line tool and an open-hardware kit. The tracker adapters are written from each vendor's documentation and have not yet been run against a live tracker. [docs/design.md](docs/design.md) section 11 says what the evaluations do and do not prove.
 
 ## Everything is local first
 
@@ -19,15 +19,15 @@ Mirage writes every document and every backlog item as a file in your repository
 
 ## How it works
 
-1. **Interview.** Mirage first settles what kind of project this is: a website, a mobile app, an API or anything else, and whether it has accounts, payments, several languages and so on. Then it asks every question the documents for those facets need, a round at a time, and each question comes with a recommended answer.
+1. **Interview.** Mirage first settles what you are building: the parts it consists of, whatever kind each one is, and what the project involves, such as accounts, payments, outside systems or regulations. It shows you the documents that calls for and asks what else this project must write down. Then it asks every question those documents need, a round at a time, and each question comes with a recommended answer.
 2. **Delegate when you are busy.** Say "use your recommendations" for one question, a round, a document or everything left. Mirage records those answers as delegated. They unblock work at once, and you can confirm them later in one pass.
 3. **Inputs.** Mirage tells you what it cannot finish without and how to get each item:
    - information, such as legal texts
    - assets, such as logos and designs
-   - accounts, such as app stores or payment providers
+   - accounts, such as a cloud provider or a payment provider
    - access to existing systems
    - tools
-4. **Documents.** Mirage writes only the documents your project needs, from a catalog of 42 document kinds. Unknowns become tracked questions instead of invented facts.
+4. **Documents.** Mirage writes only the documents your project needs. A catalog of 43 document kinds covers common ground, such as APIs, data models, payments, privacy and integrations. A part of a kind the catalog does not know gets a component specification, and the project can declare documents of its own. Unknowns become tracked questions instead of invented facts.
 5. **Audit.** A fresh-context review looks for contradictions, unsupported claims and requirements nobody could test. Each pass is logged in `docs/audit-log.md`.
 6. **Sufficiency check.** No task is written until `check.py docs-ready` says the documentation is sufficient. When it is not, mirage comes back to you with the interview, scoped to exactly what is missing.
 7. **Backlog.** Milestones, epics, stories and tasks become one Markdown file each, with IDs like `M1-E02-S03-T01`. Every story and task has:

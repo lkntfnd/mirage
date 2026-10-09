@@ -60,8 +60,18 @@ def main() -> int:
 
     facets = json.loads((project / ".mirage" / "project.json").read_text())
     kinds = sorted(c["kind"] for c in facets["components"])
-    if kinds != sorted(expected["components"]):
+    if "components" in expected and kinds != sorted(expected["components"]):
         failures.append(f"component kinds {kinds} != expected {sorted(expected['components'])}")
+    for kind in expected.get("components_include", []):
+        if kind not in kinds:
+            failures.append(f"component kind expected: {kind}")
+    catalog_kinds = json.loads((project / ".mirage" / "catalog.json").read_text())["component_kinds"]
+    custom = [kind for kind in kinds if kind not in catalog_kinds]
+    if len(custom) < expected.get("custom_components_min", 0):
+        failures.append(f"custom-kind components {custom}, expected at least {expected['custom_components_min']}")
+    declared = [d.get("id") for d in facets.get("documents", [])]
+    if len(declared) < expected.get("documents_min", 0):
+        failures.append(f"project documents {declared}, expected at least {expected['documents_min']}")
     true_flags = {k for k, v in facets.get("flags", {}).items() if v}
     for flag in expected["flags_true"]:
         if flag not in true_flags:

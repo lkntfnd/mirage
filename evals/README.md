@@ -1,10 +1,11 @@
 # Evaluations
 
-Three invented projects test mirage end to end:
+Four invented projects test mirage end to end:
 
 - `corporate-website`, a bilingual architecture-practice website that replaces an old site
 - `booking-app`, a fitness class booking app with a mobile client, a backend and an admin panel
 - `csv-cli`, an open-source command-line tool
+- `hardware-kit`, an open-hardware sensor kit made of a circuit board, a printed case and firmware. Two of its parts are kinds the catalog has no document for, and it needs documents the catalog does not have.
 
 ## Run one
 
