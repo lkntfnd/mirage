@@ -94,7 +94,9 @@ class Ready(unittest.TestCase):
 
     def test_fixture_groups_by_lane(self):
         # M2-E01-S02 has its prerequisites met but no body sections yet, so it cannot become ready.
+        # backend has only blocked and done items, and is listed all the same.
         self.assertEqual(ready_json(FIXTURE), [
+            {"lane": "backend", "ready_now": [], "can_become_ready": [], "wrongly_ready": []},
             {"lane": "mobile",
              "ready_now": [{"id": "M1-E01-S02", "title": "Cancel a booking", "status": "ready"}],
              "can_become_ready": [],
@@ -103,6 +105,13 @@ class Ready(unittest.TestCase):
 
     def test_text_output(self):
         self.assertEqual(run("ready", "--root", FIXTURE), (0, (
+            "lane backend\n"
+            "  ready now\n"
+            "    none\n"
+            "  can become ready\n"
+            "    none\n"
+            "  wrongly ready\n"
+            "    none\n"
             "lane mobile\n"
             "  ready now\n"
             "    M1-E01-S02 Cancel a booking\n"

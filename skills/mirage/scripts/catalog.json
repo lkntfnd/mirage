@@ -10,7 +10,6 @@
     "cli",
     "library",
     "data-pipeline",
-    "embedded",
     "game"
   ],
   "flags": [
@@ -247,11 +246,11 @@
       "areas": [
         {
           "key": "stack",
-          "ask": "Which languages, frameworks and runtimes each component uses, and any mandated or forbidden choices."
+          "ask": "What each component is built with, such as its languages, frameworks and runtimes or its tools and materials, and any mandated or forbidden choices."
         },
         {
           "key": "hosting",
-          "ask": "Where each component runs, and who owns those accounts."
+          "ask": "Where each component runs or is made, and who owns those accounts."
         },
         {
           "key": "data-flows",
@@ -466,7 +465,7 @@
         },
         {
           "key": "deploy",
-          "ask": "How each component is deployed, and who may deploy."
+          "ask": "How each component is deployed or released, and who may do it."
         },
         {
           "key": "cadence",
@@ -1448,7 +1447,6 @@
           "mobile-app",
           "desktop-app",
           "browser-extension",
-          "embedded",
           "game"
         ]
       },
@@ -1523,6 +1521,99 @@
         {
           "key": "devices",
           "title": "Physical test devices",
+          "kind": "tool"
+        }
+      ]
+    },
+    {
+      "id": "component",
+      "title": "Component specification",
+      "path": "docs/components/{item}.md",
+      "when": {
+        "per_custom_component": true
+      },
+      "check": "sections",
+      "sections": [
+        {
+          "key": "purpose",
+          "title": "Purpose and scope"
+        },
+        {
+          "key": "interfaces",
+          "title": "Interfaces"
+        },
+        {
+          "key": "environment",
+          "title": "Environment and constraints"
+        },
+        {
+          "key": "design",
+          "title": "Design"
+        },
+        {
+          "key": "build",
+          "title": "Build and delivery"
+        },
+        {
+          "key": "quality",
+          "title": "Quality targets"
+        },
+        {
+          "key": "verification",
+          "title": "Verification"
+        },
+        {
+          "key": "risks",
+          "title": "Risks and unknowns"
+        }
+      ],
+      "areas": [
+        {
+          "key": "purpose",
+          "ask": "What this part is for, who or what uses it, and what it deliberately does not do."
+        },
+        {
+          "key": "interfaces",
+          "ask": "What goes into it and comes out of it, such as data, files, signals, commands or physical connections, and what sits on the other side of each."
+        },
+        {
+          "key": "environment",
+          "ask": "Where it runs or exists: the platforms, hardware, materials, standards and versions it must work with, and the limits they impose."
+        },
+        {
+          "key": "structure",
+          "ask": "Which main parts it has inside, what state or data it holds, and which design decisions are already fixed."
+        },
+        {
+          "key": "build",
+          "ask": "How it is produced from its sources, and with which tools."
+        },
+        {
+          "key": "delivery",
+          "ask": "How it is packaged, versioned and delivered to the people or systems that use it."
+        },
+        {
+          "key": "quality",
+          "ask": "Which measurable targets it must meet, such as speed, accuracy, reliability, tolerance or cost."
+        },
+        {
+          "key": "verification",
+          "ask": "How someone proves it works, and what that takes: equipment, test data, environments or other people."
+        },
+        {
+          "key": "risks",
+          "ask": "What is most likely to go wrong or is least understood, and how that will be found out early."
+        }
+      ],
+      "inputs": [
+        {
+          "key": "reference-material",
+          "title": "Specifications, standards or datasheets it must follow",
+          "kind": "information"
+        },
+        {
+          "key": "tooling",
+          "title": "Tools, licences or equipment needed to build and test it",
           "kind": "tool"
         }
       ]

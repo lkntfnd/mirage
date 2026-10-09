@@ -46,24 +46,73 @@
   "name": "Fernleaf Tea",
   "language": "en",
   "components": [
-    {"id": "site", "kind": "website"},
-    {"id": "api", "kind": "backend-service"}
+    {"id": "api", "kind": "backend-service"},
+    {"id": "kiosk", "kind": "shop-kiosk"}
   ],
   "flags": {"personal_data": true, "payments": true},
   "integrations": ["stripe"],
   "regulated": [],
   "domain_topics": [],
+  "include": ["ux", "design-system"],
+  "documents": [
+    {
+      "id": "tea-sourcing",
+      "title": "Tea sourcing",
+      "path": "docs/tea-sourcing.md",
+      "sections": [
+        {"key": "suppliers", "title": "Suppliers"},
+        {"key": "seasons", "title": "Seasons and stock"}
+      ],
+      "areas": [
+        {"key": "suppliers", "ask": "Which estates supply each tea, and what happens when one cannot deliver."},
+        {"key": "seasons", "ask": "Which teas are seasonal, and how the shop shows one that has run out."}
+      ]
+    }
+  ],
   "releases": ["v1.0", "v1.1"],
   "areas": ["frontend", "backend", "infra"],
   "require_confirmed_delegation": false
 }
 ```
 
-- `components` needs at least one entry. Each `kind` must be one of the catalog's `component_kinds`, and component IDs are unique lowercase slugs.
+- `components` needs at least one entry. Component IDs are unique lowercase slugs, and each `kind` is a lowercase slug. A kind in the catalog's `component_kinds` switches on that kind's documents. Any other kind is a custom kind, and its component is planned a component specification (section 3). A component whose `kind` is not a lowercase slug is reported as `component <id> needs a kind that is a lowercase slug` and dropped.
+- `include` is optional. It lists catalog document IDs that are planned even when no facet requires them. Each must be the ID of a catalog entry whose `when` is a single-instance form.
+- `documents` is optional. It declares documents the catalog does not have, each planned for this project only.
 - A flag that is missing counts as false. Only the catalog's `flags` are allowed.
 - `integrations`, `regulated` and `domain_topics` are lists of lowercase slugs (`[a-z0-9][a-z0-9-]*`).
 - `releases` is an ordered, non-empty list. Earlier entries ship first.
 - `areas` is a non-empty list of lowercase slugs.
+
+A project-defined document has these keys, and no others:
+
+| Key | Rule |
+|---|---|
+| `id` | A lowercase slug, unique among `documents`, and not the ID of a catalog entry. It is the document's key. |
+| `title` | A non-empty string. |
+| `path` | Optional. A Markdown file under `docs/`, with no empty, `.` or `..` segment. It cannot sit under `docs/adr/`, `docs/sources/` or `docs/specs/`, whose files are read as decision records, preserved sources and screen specs. It defaults to `docs/<id>.md`. No other planned document may use the same path. |
+| `sections` | A non-empty list of `{"key", "title"}`. Keys are lowercase slugs, unique within the document, and titles are non-empty. |
+| `areas` | A non-empty list of `{"key", "ask"}`. Keys are lowercase slugs, unique within the document, and asks are non-empty. |
+
+A project-defined document is checked as type `sections`: its file carries `<!-- mirage:doc <id> -->` and every section marker. Its area keys are `<id>/<area>`, and `coverage-area` applies to them as to any other.
+
+Every problem in `project.json` is reported as `project-json`, and the entry that holds it is dropped. The messages for the keys above are:
+
+| Problem | Message |
+|---|---|
+| `include` is not a list of strings | `include must be a list of catalog document IDs` |
+| An entry names no catalog document | `include entry 'x' is not a catalog document` |
+| An entry names a per-item or listed document | `include entry 'x' is planned per item, so it cannot be included by name` |
+| `documents` is not a list | `documents must be a list` |
+| An entry is not an object, or its `id` is not a slug | `documents[N] needs an id that is a lowercase slug` |
+| An entry holds a key outside the table | `document <id> has unknown key <key>` |
+| Two entries share an ID | `document <id> is declared twice` |
+| The ID is a catalog entry's | `document <id> is already a catalog document` |
+| The title is missing or empty | `document <id> needs a title` |
+| The path breaks its rule | `document <id> needs a path that is a Markdown file under docs/` |
+| The path belongs to another planned document | `document <id> uses the path of <other key>` |
+| Sections are missing or malformed | `document <id> needs sections, each with a slug key and a title` |
+| Areas are missing or malformed | `document <id> needs areas, each with a slug key and an ask` |
+| A section or area key repeats | `document <id> uses the section key <key> twice`, or `the area key` |
 
 ## 3. Catalog and plan
 
@@ -82,11 +131,18 @@ An entry may also carry `alt_paths`, a list of older names for the same file. Wh
 | `{"any": [forms]}` | One instance if any sub-form yields one. Sub-forms are never `per` forms. |
 | `{"per": list}` | One instance per list item. `{item}` in the path becomes the item. |
 | `{"per_component": [kinds]}` | One instance per distinct kind among matching components. `{kind}` in the path becomes the kind. |
+| `{"per_custom_component": true}` | One instance per component whose kind is not in the catalog's `component_kinds`. `{item}` in the path becomes the component ID. |
 | `{"listed_in": "ux"}` | Not planned. Every file under `docs/specs/` is an instance and is checked as one. |
 
 - A single-instance document's key is its `id`, such as `prd`.
-- A per-item document's key is `<id>:<item>` or `<id>:<kind>`, such as `integration:stripe` or `platform:mobile-app`.
+- A per-item document's key is `<id>:<item>` or `<id>:<kind>`, such as `integration:stripe` or `platform:mobile-app`. A component specification's key is `component:<component id>`.
 - A screen spec's key is `screen`.
+
+The plan holds, in this order:
+
+1. Every catalog entry that a facet requires, in catalog order. Its reason names the facet, such as `flag payments is true`. A component specification's reason is `component <id> has kind <kind>, which has no document of its own`.
+2. Among them, in the same catalog order, every entry that `include` names and no facet requires. Its reason is `project.json includes it`. An included entry that a facet already requires keeps the facet's reason.
+3. Every project-defined document, in the order `documents` lists them. Its reason is `project.json declares it`.
 
 `check` types:
 
@@ -303,14 +359,27 @@ Every command accepts `--root PATH`.
 
 **check.** Prints `path:line: code: message` sorted by path and line, then `ok` or `N errors`. With `--json` it prints `{"errors": [{"path", "line", "code", "message"}]}`.
 
-**plan.** Prints each planned document instance with its key, path, reason, sections and areas. Each area shows `covered` or `uncovered`, and each typical input is listed. The reason is the facet that required it. With `--json`:
+**plan.** Prints each planned document instance with its key, path, reason, sections and areas. Each area shows `covered` or `uncovered`, and each typical input is listed. The reason is the facet that required it.
+
+After the planned documents it lists the catalog entries that are not planned and that `include` can name, which are the unplanned entries with a single-instance `when` form, in catalog order:
+
+```
+available by name, through include in .mirage/project.json:
+  ux: User experience
+  cli: Command-line interface
+```
+
+The block is left out when there is no such entry. With `--json` the same list is the `available` key, as `[{"id", "title"}]`, and it is `[]` when empty.
+
+With `--json`:
 
 ```json
 {"docs": [{"key": "integration:stripe", "id": "integration", "title": "...", "path": "docs/integrations/stripe.md",
   "reason": "integrations includes stripe", "exists": true,
   "sections": [{"key": "...", "title": "..."}],
   "areas": [{"key": "integration:stripe/auth", "ask": "...", "covered": false}],
-  "inputs": [{"key": "...", "title": "...", "kind": "account"}]}]}
+  "inputs": [{"key": "...", "title": "...", "kind": "account"}]}],
+ "available": [{"id": "cli", "title": "Command-line interface"}]}
 ```
 
 **docs-ready.** Answers one question: is the documentation sufficient to plan the backlog? It runs the `project`, `docs`, `register`, `prd`, `refs`, `links`, `sources` and `secrets` groups and the `coverage-area` rule. It ignores `coverage-req`, the `backlog` and `index` groups, and every diagnostic whose path is under `backlog/`. It adds two conditions of its own: `docs/prd.md` defines at least one requirement whose scope is not `OUT`, and `docs/audit-log.md` records a documents audit, meaning it holds a line that starts with `## YYYY-MM-DD Documents`.
@@ -321,7 +390,7 @@ Every command accepts `--root PATH`.
 
 With `--json` it prints `{"sufficient": true, "errors": [...], "open_questions": [{"id", "title", "blocks"}]}`.
 
-**ready.** Groups stories and tasks by lane in three lists:
+**ready.** Groups stories and tasks by lane in three lists. Every area in `project.json` is a lane and is printed, even when all three of its lists are empty:
 
 - ready now, meaning status ready with every prerequisite met
 - can become ready, meaning status draft or blocked with every prerequisite met, every required body section complete, no `blocked_reason` and, for a feature story, at least one requirement in `req`
@@ -393,5 +462,5 @@ An agent runs the operations, records each result with `sync-record`, then runs 
 
 - A valid fixture project under `tests/fixtures/valid/` passes `check` with no errors. Its facets must plan at least one per-item document, one per-component document and one flag-driven document.
 - For every diagnostic code in section 8, one test copies the fixture into a temporary directory, applies one mutation, and asserts that `check` reports that code and nothing else.
-- Every `when` form, and the `ready`, `index`, `set-status`, `sync-plan` and `sync-record` commands, have tests that assert exact output values.
+- Every `when` form, `include`, project-defined documents, and the `ready`, `index`, `set-status`, `sync-plan` and `sync-record` commands, have tests that assert exact output values. Every `project-json` message in section 2 has a test.
 - The fixture and every example use invented projects only.

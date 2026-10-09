@@ -28,6 +28,8 @@ def describe_when(when) -> str:
         return f"one per entry in `{when['per']}`"
     if "per_component" in when:
         return "one per component kind among " + ", ".join(when["per_component"])
+    if "per_custom_component" in when:
+        return "one per component whose kind is not a catalog kind"
     if "listed_in" in when:
         return f"one per screen or page listed in `{when['listed_in']}`"
     raise ValueError(f"unknown when form: {when}")
@@ -45,7 +47,8 @@ def render(catalog: dict) -> str:
         "",
         "## Facets",
         "",
-        "- Component kinds: " + ", ".join(f"`{k}`" for k in catalog["component_kinds"]) + ".",
+        "- Component kinds that have documents of their own: " + ", ".join(f"`{k}`" for k in catalog["component_kinds"])
+        + ". A component of any other kind gets a component specification.",
         "- Flags: " + ", ".join(f"`{k}`" for k in catalog["flags"]) + ".",
         "- Lists: " + ", ".join(f"`{k}`" for k in catalog["lists"]) + ".",
         "",

@@ -40,7 +40,7 @@ def expected_doc_marker(doc: dict) -> str:
     if doc_id == "screen":
         return "<!-- mirage:doc screen -->"
     when = doc.get("when")
-    if isinstance(when, dict) and "per" in when:
+    if isinstance(when, dict) and ("per" in when or "per_custom_component" in when):
         return "<!-- mirage:doc " + doc_id + ":{{item}} -->"
     if isinstance(when, dict) and "per_component" in when:
         return "<!-- mirage:doc " + doc_id + ":{{kind}} -->"

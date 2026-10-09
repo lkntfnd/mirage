@@ -2,11 +2,11 @@
 
 Generated from `skills/mirage/scripts/catalog.json` by `scripts/render_catalog.py`. Edit the JSON, then rerun the script.
 
-The catalog holds 42 document kinds, 209 question areas and 43 typical inputs.
+The catalog holds 43 document kinds, 218 question areas and 45 typical inputs.
 
 ## Facets
 
-- Component kinds: `website`, `web-app`, `mobile-app`, `desktop-app`, `browser-extension`, `backend-service`, `cli`, `library`, `data-pipeline`, `embedded`, `game`.
+- Component kinds that have documents of their own: `website`, `web-app`, `mobile-app`, `desktop-app`, `browser-extension`, `backend-service`, `cli`, `library`, `data-pipeline`, `game`. A component of any other kind gets a component specification.
 - Flags: `accounts`, `personal_data`, `payments`, `cms`, `i18n`, `analytics`, `notifications`, `search`, `offline`, `realtime`, `ai`, `admin`, `migration`, `file_formats`, `source_documents`.
 - Lists: `integrations`, `regulated`, `domain_topics`.
 
@@ -38,7 +38,8 @@ The catalog holds 42 document kinds, 209 question areas and 43 typical inputs.
 | File and data formats (`formats`) | `docs/formats.md` | flag `file_formats` | 5 | 4 | 0 |
 | Command-line interface (`cli`) | `docs/cli.md` | a component of kind cli | 6 | 6 | 0 |
 | Public API (`public-api`) | `docs/public-api.md` | a component of kind library | 6 | 6 | 0 |
-| Platform (`platform`) | `docs/platforms/{kind}.md` | one per component kind among mobile-app, desktop-app, browser-extension, embedded, game | 6 | 7 | 3 |
+| Platform (`platform`) | `docs/platforms/{kind}.md` | one per component kind among mobile-app, desktop-app, browser-extension, game | 6 | 7 | 3 |
+| Component specification (`component`) | `docs/components/{item}.md` | one per component whose kind is not a catalog kind | 8 | 9 | 2 |
 | Data pipeline (`data-pipeline`) | `docs/data-pipeline.md` | a component of kind data-pipeline | 6 | 6 | 1 |
 | AI features (`ai`) | `docs/ai.md` | flag `ai` | 7 | 7 | 2 |
 | Authentication and accounts (`auth`) | `docs/auth.md` | flag `accounts` | 6 | 7 | 1 |
@@ -83,8 +84,8 @@ Typical inputs: Existing briefs, specifications or pitch documents (information)
 
 ### Architecture (`architecture`)
 
-- `stack`: Which languages, frameworks and runtimes each component uses, and any mandated or forbidden choices.
-- `hosting`: Where each component runs, and who owns those accounts.
+- `stack`: What each component is built with, such as its languages, frameworks and runtimes or its tools and materials, and any mandated or forbidden choices.
+- `hosting`: Where each component runs or is made, and who owns those accounts.
 - `data-flows`: How data moves between components and external systems.
 - `environments`: Which environments exist, such as local, staging and production, and what differs between them.
 - `repository`: Whether the code lives in one repository or several, and how directories map to components.
@@ -119,7 +120,7 @@ Typical inputs: Test devices or device-cloud access (tool).
 ### Operations (`operations`)
 
 - `ci`: Which CI service runs the checks, and on which events.
-- `deploy`: How each component is deployed, and who may deploy.
+- `deploy`: How each component is deployed or released, and who may do it.
 - `cadence`: How often releases ship, and how they are announced.
 - `rollback`: How a bad release is rolled back, and how fast.
 - `monitoring`: Which logs, metrics, alerts and error tracking exist, and who receives alerts.
@@ -257,6 +258,20 @@ Typical inputs: Access to existing data (access).
 - `device-features`: Which device features are used, such as camera, location, push or biometrics.
 
 Typical inputs: App store or distribution accounts (account); Access to signing keys and certificates (access); Physical test devices (tool).
+
+### Component specification (`component`)
+
+- `purpose`: What this part is for, who or what uses it, and what it deliberately does not do.
+- `interfaces`: What goes into it and comes out of it, such as data, files, signals, commands or physical connections, and what sits on the other side of each.
+- `environment`: Where it runs or exists: the platforms, hardware, materials, standards and versions it must work with, and the limits they impose.
+- `structure`: Which main parts it has inside, what state or data it holds, and which design decisions are already fixed.
+- `build`: How it is produced from its sources, and with which tools.
+- `delivery`: How it is packaged, versioned and delivered to the people or systems that use it.
+- `quality`: Which measurable targets it must meet, such as speed, accuracy, reliability, tolerance or cost.
+- `verification`: How someone proves it works, and what that takes: equipment, test data, environments or other people.
+- `risks`: What is most likely to go wrong or is least understood, and how that will be found out early.
+
+Typical inputs: Specifications, standards or datasheets it must follow (information); Tools, licences or equipment needed to build and test it (tool).
 
 ### Data pipeline (`data-pipeline`)
 

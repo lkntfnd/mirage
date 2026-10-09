@@ -87,6 +87,7 @@ QUESTION_STATUSES = ("open", "answered", "delegated")
 INPUT_STATUSES = ("missing", "provided", "not-needed")
 INPUT_KINDS = ("information", "asset", "account", "access", "tool")
 PRD_SCOPES = ("MUST", "SHOULD", "MAY", "OUT")
+DOCUMENT_KEYS = ("id", "title", "path", "sections", "areas")
 
 LEVELS = ("milestone", "epic", "story", "task")
 LEVEL_RANK = {level: rank for rank, level in enumerate(LEVELS)}
@@ -208,6 +209,7 @@ class Catalog:
 class Component:
     id: str
     kind: str
+    custom: bool
 
 
 @dataclass
@@ -221,6 +223,8 @@ class Facets:
     releases: List[str]
     areas: List[str]
     require_confirmed_delegation: bool
+    include: List[str]
+    documents: List[DocKind]
 
 
 @dataclass(frozen=True)
@@ -584,13 +588,99 @@ def is_slug(value: object) -> bool:
     return isinstance(value, str) and bool(SLUG.fullmatch(value))
 
 
+def is_text(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def is_doc_path(value: object) -> bool:
+    if not isinstance(value, str) or not value.startswith("docs/") or not value.endswith(".md"):
+        return False
+    return not {"", ".", ".."} & set(value.split("/"))
+
+
+def reserved_folders(catalog: Catalog) -> Tuple[str, ...]:
+    """Folders whose files are read as something else: decision records, preserved sources and listed instances."""
+    listed = tuple(kind.path.split("{", 1)[0] for kind in catalog.docs if kind.when[0] == "listed_in")
+    return (ADR_DIR + "/", SOURCES_DIR + "/") + listed
+
+
+def load_include(raw: object, catalog: Catalog) -> Tuple[List[str], List[str]]:
+    if not isinstance(raw, list) or not all(isinstance(entry, str) for entry in raw):
+        return [], ["include must be a list of catalog document IDs"]
+    kinds = {doc.id: doc for doc in catalog.docs}
+    include: List[str] = []
+    problems: List[str] = []
+    for entry in raw:
+        if entry not in kinds:
+            problems.append(f"include entry '{entry}' is not a catalog document")
+        elif kinds[entry].when[0] not in SINGLE_FORMS:
+            problems.append(f"include entry '{entry}' is planned per item, so it cannot be included by name")
+        else:
+            include.append(entry)
+    return include, problems
+
+
+def load_parts(doc_id: str, entry: dict, noun: str, text_key: str, article: str, make: Callable) -> Tuple[tuple, List[str]]:
+    raw = entry.get(f"{noun}s")
+    if not isinstance(raw, list) or not raw or not all(
+        isinstance(part, dict) and is_slug(part.get("key")) and is_text(part.get(text_key)) for part in raw
+    ):
+        return (), [f"document {doc_id} needs {noun}s, each with a slug key and {article} {text_key}"]
+    keys = [part["key"] for part in raw]
+    repeated = dict.fromkeys(key for key in keys if keys.count(key) > 1)
+    return (
+        tuple(make(part["key"], part[text_key]) for part in raw),
+        [f"document {doc_id} uses the {noun} key {key} twice" for key in repeated],
+    )
+
+
+def load_documents(raw: object, catalog: Catalog, planned: Sequence[PlannedDoc]) -> Tuple[List[DocKind], List[str]]:
+    if not isinstance(raw, list):
+        return [], ["documents must be a list"]
+    taken = {doc.path: doc.key for doc in planned}
+    reserved = reserved_folders(catalog)
+    catalog_ids = {doc.id for doc in catalog.docs}
+    declared: set = set()
+    documents: List[DocKind] = []
+    problems: List[str] = []
+    for index, entry in enumerate(raw):
+        if not isinstance(entry, dict) or not is_slug(entry.get("id")):
+            problems.append(f"documents[{index}] needs an id that is a lowercase slug")
+            continue
+        doc_id = entry["id"]
+        if doc_id in declared:
+            problems.append(f"document {doc_id} is declared twice")
+            continue
+        declared.add(doc_id)
+        if doc_id in catalog_ids:
+            problems.append(f"document {doc_id} is already a catalog document")
+            continue
+        found = [f"document {doc_id} has unknown key {key}" for key in sorted(set(entry) - set(DOCUMENT_KEYS))]
+        if not is_text(entry.get("title")):
+            found.append(f"document {doc_id} needs a title")
+        path = entry.get("path", f"docs/{doc_id}.md")
+        if not is_doc_path(path) or path.startswith(reserved):
+            found.append(f"document {doc_id} needs a path that is a Markdown file under docs/")
+        elif path in taken:
+            found.append(f"document {doc_id} uses the path of {taken[path]}")
+        sections, section_problems = load_parts(doc_id, entry, "section", "title", "a", Section)
+        areas, area_problems = load_parts(doc_id, entry, "area", "ask", "an", Area)
+        found += section_problems + area_problems
+        if found:
+            problems += found
+            continue
+        taken[path] = doc_id
+        documents.append(DocKind(doc_id, entry["title"], path, ("always", None), "sections", sections, areas, ()))
+    return documents, problems
+
+
 def load_facets(root: Path, catalog: Catalog) -> Tuple[Facets, List[Diagnostic]]:
     raw = read_json(root / PROJECT_FILE, PROJECT_FILE)
     if not isinstance(raw, dict):
         raise UsageError(f"cannot read {PROJECT_FILE}: the top level must be an object")
     problems: List[str] = []
     allowed = {"mirage_version", "name", "language", "components", "flags", "releases", "areas",
-               "require_confirmed_delegation", *catalog.lists}
+               "require_confirmed_delegation", "include", "documents", *catalog.lists}
     problems += [f"unknown key {key}" for key in sorted(set(raw) - allowed)]
 
     name = raw.get("name")
@@ -609,12 +699,12 @@ def load_facets(root: Path, catalog: Catalog) -> Tuple[Facets, List[Diagnostic]]
     for index, entry in enumerate(raw_components):
         if not isinstance(entry, dict) or not is_slug(entry.get("id")):
             problems.append(f"components[{index}] needs an id that is a lowercase slug")
-        elif entry.get("kind") not in catalog.component_kinds:
-            problems.append(f"component {entry['id']} has unknown kind {entry.get('kind')!r}")
+        elif not is_slug(entry.get("kind")):
+            problems.append(f"component {entry['id']} needs a kind that is a lowercase slug")
         elif any(c.id == entry["id"] for c in components):
             problems.append(f"component id {entry['id']} is used twice")
         else:
-            components.append(Component(entry["id"], entry["kind"]))
+            components.append(Component(entry["id"], entry["kind"], entry["kind"] not in catalog.component_kinds))
 
     flags: Dict[str, bool] = {}
     raw_flags = raw.get("flags", {})
@@ -655,7 +745,13 @@ def load_facets(root: Path, catalog: Catalog) -> Tuple[Facets, List[Diagnostic]]
         problems.append("require_confirmed_delegation must be true or false")
         confirmed = False
 
-    facets = Facets(name, components, flags, lists, releases, areas, confirmed)
+    include, include_problems = load_include(raw.get("include", []), catalog)
+    facets = Facets(name, components, flags, lists, releases, areas, confirmed, include, [])
+    documents, document_problems = load_documents(
+        raw.get("documents", []), catalog, catalog_plan(catalog, facets, root),
+    )
+    problems += include_problems + document_problems
+    facets.documents = documents
     return facets, [Diagnostic(PROJECT_FILE, None, "project-json", p) for p in problems]
 
 
@@ -691,6 +787,13 @@ def per_component(arg: object, facets: Facets) -> List[Tuple[str, str]]:
     return [(kind, f"components include {kind}") for kind in kinds]
 
 
+def per_custom_component(arg: object, facets: Facets) -> List[Tuple[str, str]]:
+    return [
+        (c.id, f"component {c.id} has kind {c.kind}, which has no document of its own")
+        for c in facets.components if c.custom
+    ]
+
+
 SINGLE_FORMS: Dict[str, Callable[[object, Facets], Optional[str]]] = {
     "always": when_always,
     "component": when_component,
@@ -701,6 +804,7 @@ SINGLE_FORMS: Dict[str, Callable[[object, Facets], Optional[str]]] = {
 PER_FORMS: Dict[str, Tuple[Callable[[object, Facets], List[Tuple[str, str]]], str]] = {
     "per": (per_item, "{item}"),
     "per_component": (per_component, "{kind}"),
+    "per_custom_component": (per_custom_component, "{item}"),
 }
 
 
@@ -713,12 +817,14 @@ def planned_path(root: Optional[Path], kind: DocKind) -> str:
     return kind.path
 
 
-def make_plan(catalog: Catalog, facets: Facets, root: Optional[Path] = None) -> List[PlannedDoc]:
+def catalog_plan(catalog: Catalog, facets: Facets, root: Optional[Path] = None) -> List[PlannedDoc]:
     plan: List[PlannedDoc] = []
     for kind in catalog.docs:
         form, arg = kind.when
         if form in SINGLE_FORMS:
             reason = SINGLE_FORMS[form](arg, facets)
+            if not reason and kind.id in facets.include:
+                reason = "project.json includes it"
             if reason:
                 plan.append(PlannedDoc(kind.id, kind, planned_path(root, kind), reason))
         elif form in PER_FORMS:
@@ -726,6 +832,11 @@ def make_plan(catalog: Catalog, facets: Facets, root: Optional[Path] = None) -> 
             for item, reason in expand(arg, facets):
                 plan.append(PlannedDoc(f"{kind.id}:{item}", kind, kind.path.replace(placeholder, item), reason))
     return plan
+
+
+def make_plan(catalog: Catalog, facets: Facets, root: Optional[Path] = None) -> List[PlannedDoc]:
+    declared = [PlannedDoc(doc.id, doc, doc.path, "project.json declares it") for doc in facets.documents]
+    return catalog_plan(catalog, facets, root) + declared
 
 
 def listed_instances(project: Project) -> List[Tuple[DocKind, str]]:
@@ -1730,7 +1841,10 @@ GENERATED: Dict[str, Callable[[Project], str]] = {
 
 
 def ready_report(project: Project) -> List[dict]:
-    lanes: Dict[Optional[str], dict] = {}
+    lanes: Dict[Optional[str], dict] = {
+        area: {"lane": area, "ready_now": [], "can_become_ready": [], "wrongly_ready": []}
+        for area in project.facets.areas
+    }
     for item in project.items_at(*WORK_LEVELS):
         unmet = unmet_prerequisites(project, item)
         entry = {"id": item.id, "title": item.title, "status": item.status}
@@ -2010,7 +2124,16 @@ def plan_entries(project: Project) -> List[dict]:
     ]
 
 
-def render_plan(entries: List[dict]) -> str:
+def available_by_name(project: Project) -> List[dict]:
+    """Catalog entries that `include` can name and the project does not plan."""
+    planned = {doc.kind.id for doc in project.plan}
+    return [
+        {"id": kind.id, "title": kind.title}
+        for kind in project.catalog.docs if kind.when[0] in SINGLE_FORMS and kind.id not in planned
+    ]
+
+
+def render_plan(entries: List[dict], available: List[dict]) -> str:
     blocks = []
     for doc in entries:
         lines = [
@@ -2022,6 +2145,10 @@ def render_plan(entries: List[dict]) -> str:
         lines += [f"  area {a['key']}: {'covered' if a['covered'] else 'uncovered'}" for a in doc["areas"]]
         lines += [f"  input {i['key']}: {i['title']} ({i['kind']})" for i in doc["inputs"]]
         blocks.append("\n".join(lines))
+    if available:
+        blocks.append("\n".join(
+            [f"available by name, through include in {PROJECT_FILE}:"] + [f"  {a['id']}: {a['title']}" for a in available]
+        ))
     return "\n\n".join(blocks)
 
 
@@ -2078,11 +2205,12 @@ def cmd_docs_ready(root: Path, args: argparse.Namespace) -> int:
 
 
 def cmd_plan(root: Path, args: argparse.Namespace) -> int:
-    entries = plan_entries(load_project(root))
+    project = load_project(root)
+    entries, available = plan_entries(project), available_by_name(project)
     if args.json:
-        emit_json({"docs": entries})
+        emit_json({"docs": entries, "available": available})
     else:
-        print(render_plan(entries))
+        print(render_plan(entries, available))
     return 0
 
 

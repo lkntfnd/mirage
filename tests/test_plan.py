@@ -16,6 +16,7 @@ CATALOG = synthetic_catalog(
     catalog_doc("integration", "docs/integrations/{item}.md", {"per": "integrations"},
                 areas=("auth", "limits"), inputs=(("sandbox", "account"),)),
     catalog_doc("platform", "docs/platforms/{kind}.md", {"per_component": ["mobile-app", "desktop-app"]}),
+    catalog_doc("component", "docs/components/{item}.md", {"per_custom_component": True}),
     catalog_doc("screen", "docs/specs/{component}/{name}.md", {"listed_in": "ux"}, "sections",
                 sections=("purpose", "states")),
 )
@@ -77,6 +78,16 @@ class WhenForms(unittest.TestCase):
             ("site", "docs/site.md", "components include desktop-app"),
             ("platform:desktop-app", "docs/platforms/desktop-app.md", "components include desktop-app"),
             ("platform:mobile-app", "docs/platforms/mobile-app.md", "components include mobile-app"),
+        ])
+
+    def test_per_custom_component_plans_one_instance_per_component_outside_the_catalog_kinds(self):
+        components = [{"id": "kiosk", "kind": "shop-kiosk"}, {"id": "tool", "kind": "cli"},
+                      {"id": "arm", "kind": "robot-arm"}, {"id": "till", "kind": "shop-kiosk"}]
+        self.assertEqual(plan_of(components=components), [
+            BASE,
+            ("component:kiosk", "docs/components/kiosk.md", "component kiosk has kind shop-kiosk, which has no document of its own"),
+            ("component:arm", "docs/components/arm.md", "component arm has kind robot-arm, which has no document of its own"),
+            ("component:till", "docs/components/till.md", "component till has kind shop-kiosk, which has no document of its own"),
         ])
 
     def test_listed_in_is_not_planned_but_every_spec_file_is_checked(self):
@@ -141,7 +152,30 @@ class PlanOutput(unittest.TestCase):
             "  area integration:tile-maps/auth: covered\n"
             "  area integration:tile-maps/limits: uncovered\n"
             "  input sandbox: Sandbox (account)\n"
+            "\n"
+            "available by name, through include in .mirage/project.json:\n"
+            "  site: Site\n"
+            "  ai: Ai\n"
+            "  rules: Rules\n"
+            "  content: Content\n"
         )))
+
+    def test_json_lists_what_include_can_name(self):
+        with project(self.FILES) as root:
+            available = json.loads(run("plan", "--root", root, "--json")[1])["available"]
+        self.assertEqual(available, [
+            {"id": "site", "title": "Site"}, {"id": "ai", "title": "Ai"},
+            {"id": "rules", "title": "Rules"}, {"id": "content", "title": "Content"},
+        ])
+
+    def test_nothing_is_available_once_every_single_document_is_planned(self):
+        files = {**self.FILES, ".mirage/project.json": facets(integrations=["tile-maps"], include=["site", "ai", "rules", "content"])}
+        with project(files) as root:
+            code, out, _ = run("plan", "--root", root)
+            available = json.loads(run("plan", "--root", root, "--json")[1])["available"]
+        self.assertEqual(available, [])
+        self.assertNotIn("available by name", out)
+        self.assertTrue(out.endswith("  input sandbox: Sandbox (account)\n"), out[-80:])
 
     def test_vendored_catalog_wins_over_the_bundled_one(self):
         with project(self.FILES) as root:

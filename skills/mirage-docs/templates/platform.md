@@ -1,7 +1,7 @@
 <!-- mirage:doc platform:{{kind}} -->
 # Platform: {{Platform name}}
 
-{{One paragraph: this file is written once per component kind the project ships, such as a mobile app, a desktop app, a browser extension or an embedded target. A kind that ships on several operating systems, such as iOS and Android, covers each one under its own sub-heading in every section. Name which component this instance documents and what this document fixes. Say an unsettled target version, store account or permission becomes a question in docs/questions.md rather than an invented one.}}
+{{One paragraph: this file is written once per component kind the project ships, such as a mobile app, a desktop app or a browser extension. A kind that ships on several operating systems, such as iOS and Android, covers each one under its own sub-heading in every section. Name which component this instance documents and what this document fixes. Say an unsettled target version, store account or permission becomes a question in docs/questions.md rather than an invented one.}}
 
 <!-- mirage:section targets -->
 ## Supported platforms and versions
