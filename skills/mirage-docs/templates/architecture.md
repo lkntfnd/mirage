@@ -11,11 +11,11 @@
 <!-- mirage:section components -->
 ## Components and stack
 
-{{One row per component in .mirage/project.json. Name the language, framework and runtime for each, and call out any choice the owner mandated or forbade. Record hosting account ownership here, or note it is unresolved and belongs in docs/questions.md as (Q-nnn).}}
+{{One row per component in .mirage/project.json. Name what each is built with: the language, framework and runtime for software, or the tools and materials for anything else. Call out any choice the owner mandated or forbade. Record who owns each hosting or supplier account here, or note it is unresolved and belongs in docs/questions.md as (Q-nnn).}}
 
-| Component | Kind | Stack | Hosted on | Account owner |
+| Component | Kind | Built with | Runs or is made at | Account owner |
 |---|---|---|---|---|
-| {{component id}} | {{component kind, such as website or backend-service}} | {{language, framework, runtime}} | {{provider or environment}} | {{who holds the account}} |
+| {{component id}} | {{component kind from .mirage/project.json}} | {{language, framework and runtime, or tools and materials}} | {{provider, environment or supplier}} | {{who holds the account}} |
 
 <!-- mirage:section data-flows -->
 ## Data flows

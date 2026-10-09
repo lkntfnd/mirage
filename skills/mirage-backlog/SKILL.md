@@ -68,7 +68,7 @@ Every story carries:
 Every story and task body has four sections, each under its marker:
 
 - **Context.** Why the item exists, in one to three lines, with its requirement IDs and links to the document sections it implements.
-- **Acceptance criteria.** A checklist. Each line is testable by someone who did not write the code, and the lines together prove the linked requirements. Given, when, then phrasing works well. Include every language, device or performance target the documents require for this item.
+- **Acceptance criteria.** A checklist. Each line is testable by someone who did not do the work, and the lines together prove the linked requirements. Given, when, then phrasing works well. Include every language, device or performance target the documents require for this item.
 - **Verification.** The tests, scenario IDs or exact commands that prove the criteria.
 - **Out of scope.** What the item deliberately leaves out, or a sentence saying nothing is excluded.
 
@@ -79,6 +79,12 @@ Split a story into tasks when it spans more than one lane, or is too large for o
 A spike is a story of kind `spike` that answers a question by trying something. It lists that question in `questions` and sets a timebox in its context. The question does not block the spike, because answering it is the spike's work, so a spike can be ready while its question is open. Its outcome is recorded as that question's answer, plus an ADR when the decision is hard to reverse. The validator rejects a done spike whose question is still open.
 
 When one lane needs something from another, write that need as its own item in the other lane, with the exact shape needed in its context, and add it to the requesting item's `blocked_by`.
+
+An item need not be code. An order, a measurement, a review or a trial build is planned the same way, with criteria someone else can check.
+
+- Work that waits on someone outside the project, such as a delivery, a lab result or a supplier's answer, waits on an input. Record it in `docs/inputs.md` and list it in the item's `inputs`.
+- Work that needs the owner's go-ahead, such as a purchase, waits on a question that asks for it. List it in the item's `questions`.
+- When planning shows work that fits no lane, add the lane to `areas` in `.mirage/project.json` with the owner, and add it to the lane tables in `docs/delivery.md` and `AGENTS.md`.
 
 ## 7. Estimates
 
@@ -99,7 +105,7 @@ Never set `ready` by judgment. The validator rejects a ready item with an unmet 
 - Never renumber or delete an item.
 - Work that moves to another milestone is cancelled with `replaced_by`. A new item under the new milestone names it in `replaces`.
 - Dropped work is `cancelled`, with the reason in its body.
-- A finished item is set with `python3 .mirage/check.py set-status <ID> done --evidence "<commit SHA and CI run>"`.
+- A finished item is set with `python3 .mirage/check.py set-status <ID> done --evidence "<commit SHA and CI run>"`. For work no pipeline can check, the evidence is the path of the dated record that `docs/delivery.md` defines.
 
 ## Finish
 

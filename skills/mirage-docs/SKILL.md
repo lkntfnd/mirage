@@ -1,6 +1,6 @@
 ---
 name: mirage-docs
-description: Writes or updates every document a mirage project needs from its catalog templates, grounding each statement in the question register, the inputs register, preserved sources and the codebase. Covers the PRD with stable requirement IDs, architecture, UX with screen specs, API, data model, security, operations, test strategy, delivery conventions, AGENTS.md, the project README, an executive summary and every facet-specific document. Use when the mirage interview is complete, when `check.py plan` shows missing documents, or when answers change and documents must follow.
+description: Writes or updates every document a mirage project needs, grounding each statement in the question register, the inputs register, preserved sources and the codebase. Covers the PRD with stable requirement IDs, architecture, security, operations, test strategy, delivery conventions, AGENTS.md, the project README, an executive summary, a specification for each part being built, every document the project's facets switch on, and the documents the project declares for itself. Use when the mirage interview is complete, when `check.py plan` shows missing documents, or when answers change and documents must follow.
 ---
 
 # Mirage docs
@@ -24,7 +24,7 @@ Write in the order that lets later documents cite earlier ones:
 2. `architecture`
 3. `ux` and its screen specs
 4. `api`, `data-model` and `formats`
-5. every other planned document in plan order
+5. every other planned document in plan order, which includes each component specification and the project's own documents
 6. `delivery`, then `agents`
 7. `readme`, then `summary` last, because it condenses everything else
 
@@ -34,7 +34,9 @@ Write in the order that lets later documents cite earlier ones:
 
 For each planned document that is missing, or that has `{{` left in it:
 
-1. Copy `templates/<id>.md` from this skill's folder to the planned path. For a per-item document, replace `{{item}}` or `{{kind}}` in the doc marker with the item. `integration:stripe` uses `templates/integration.md` and `item` becomes `stripe`.
+1. Copy `templates/<id>.md` from this skill's folder to the planned path. For a per-item document, replace `{{item}}` or `{{kind}}` in the doc marker with the item. `integration:stripe` uses `templates/integration.md` and `item` becomes `stripe`. `component:sensor-board` uses `templates/component.md` and `item` becomes `sensor-board`.
+
+   A project document, whose plan reason is `project.json declares it`, has no template. Build its file from the plan entry: the marker `<!-- mirage:doc <id> -->`, a `# <title>` heading, one paragraph saying what the document fixes, then each section's `<!-- mirage:section <key> -->` marker and `## <title>` heading in the order given. Write each section from the answers to the document's areas. Give it the shape the specialist templates have: cite the requirements it serves, mark each tunable value as a hypothesis, and end with test scenarios when it states rules someone can test.
 2. Replace every `{{...}}` with real content. Each `{{...}}` says what belongs there. Keep every `<!-- mirage:doc -->` and `<!-- mirage:section -->` marker exactly as written. Text outside `{{...}}` is standard wording that stays. Headings, tables and prose may be in the project's language from `.mirage/project.json`.
 3. Ground every statement:
    - In the answers, cited as `(Q-nnn)`.
@@ -44,7 +46,7 @@ For each planned document that is missing, or that has `{{` left in it:
    - In facts you verified in the codebase.
 4. When a statement needs something nobody decided, do not write your best guess. Add a question to `docs/questions.md` with your recommendation, and cite it in the document. It is `open`, or `delegated` when the owner's standing delegation covers it. A date, a price, an estimate or a target number is never covered and stays open. The `mirage-interview` skill's `references/registers.md` has the format.
 5. Mark every tunable number, such as a timeout, a threshold or a budget, as a hypothesis until it is measured or decided.
-6. When a section does not apply to this project, keep its marker and heading and say so in one sentence with the reason.
+6. The templates describe common ground, and much of it comes from software. When a section, a table or a column does not fit this project, keep the marker and heading, then either say in one sentence why it does not apply or write it in the project's own terms. Never bend the project to fit a template. An area's answer goes into the section where it fits best, because areas and sections do not map one to one.
 7. Every string shaped like an ID must name something that exists. In an example of a naming pattern, write the pattern, such as `<ID>-<slug>`, and never a made-up ID.
 8. Sample data, such as an invented date or amount in an example, belongs in the document's examples or test-scenarios section. Anywhere else, a date or an amount needs a question, an input or a source behind it.
 9. A test scenario ID is `<AREA>-T<NN>`, numbered in one sequence per area across all documents. Search `docs/` for the area's highest number before you add one.
@@ -60,6 +62,7 @@ The PRD owns requirements. Each one is one testable obligation.
 - Never renumber an ID. A withdrawn requirement keeps its row with scope `OUT` and a note.
 - Scope is `MUST`, `SHOULD`, `MAY` or `OUT`, and release is a project release.
 - Other documents cite requirement IDs and never restate a requirement in different words.
+- Once the requirements exist, add to each open question's `Blocks` the requirements that wait on it.
 - A requirement that cannot be tested as written is not finished. Give it a measure, a named field or an example.
 
 ## 4. Screens and pages
@@ -74,7 +77,7 @@ The PRD owns requirements. Each one is one testable obligation.
 
 ## 5. Decisions and terms
 
-When a decision is hard to reverse, surprising without context and the result of a real trade-off, record it as an ADR through the `domain-modeling` skill and cite it as `ADR-NNNN`. Add new project terms to `CONTEXT.md` the same way.
+When a decision is hard to reverse, surprising without context and the result of a real trade-off, record it as an ADR through the `domain-modeling` skill and cite it as `ADR-NNNN`. Add new project terms to the glossary the same way.
 
 ## 6. Delivery conventions, AGENTS.md and CLAUDE.md
 

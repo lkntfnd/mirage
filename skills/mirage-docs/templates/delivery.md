@@ -52,18 +52,20 @@ An item is ready when all of these hold. The validator enforces them.
 <!-- mirage:section done -->
 ## Definition of done
 
-An item is done when its acceptance criteria are met and its `evidence` names the commit and the CI run that prove it. A story is done only when every task under it is done or cancelled.
+An item is done when its acceptance criteria are met and its `evidence` names what proves it: the commit and its CI run, or for work no pipeline can check, the dated record committed to the repository. A story is done only when every task under it is done or cancelled.
 
 {{List what else done means in this project, from the answers in docs/questions.md: who reviews, where the change must be deployed, on which devices or in which languages it is verified, which analytics or documents must be updated. Each line is checkable by someone who did not do the work.}}
 
 <!-- mirage:section labels -->
 ## Labels and lanes
 
-Every story and task carries at least one `area:<name>` label. The area is the lane that builds the item. An item with several areas names its owning `lane`. The label decides who builds an item, and the plan sets no assignee in the tracker.
+Every story and task carries at least one `area:<name>` label. The area is the lane that does the item's work. An item with several areas names its owning `lane`. The label decides who builds an item, and the plan sets no assignee in the tracker.
 
-| Area label | Builds | Owned paths |
+| Area label | Does | Owned paths |
 |---|---|---|
-| area:{{area}} | {{What this lane builds}} | {{Paths this lane may edit}} |
+| area:{{area}} | {{What this lane builds or looks after}} | {{Paths this lane may edit, including the documents of its own parts}} |
+
+{{Name who may edit the files no lane owns: the registers, shared documents and automation files.}}
 
 Stories also carry a kind (`feature`, `spike`, `bug`, `chore` or `docs`), a scope (`must`, `should` or `may`), a release and a priority (`urgent`, `high`, `medium` or `low`). In the tracker these appear as `type:`, `scope:` and `release:` labels.
 

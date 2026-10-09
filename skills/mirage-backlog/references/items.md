@@ -46,7 +46,7 @@ The frontmatter sits between two `---` lines at the top of the file.
 | `labels` | story and task required | at least one `area:<area>` from `.mirage/project.json` |
 | `lane` | story, task | the owning area when there are several area labels |
 | `estimate` | story, task | 1, 2, 3, 5 or 8, only when the owner supplies estimates |
-| `evidence` | all, required when done | commit SHA, pull request and CI run |
+| `evidence` | all, required when done | commit SHA, pull request and CI run, or the path of a dated record for work no pipeline can check |
 | `blocked_reason` | all | what blocks the item when no question, input or blocker explains it |
 | `replaces` | all | the cancelled item this one replaces |
 | `replaced_by` | all | the item that replaces this cancelled one |

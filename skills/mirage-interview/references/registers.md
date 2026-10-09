@@ -28,7 +28,7 @@ Create the file with a `# Questions` heading and one line saying it holds every 
 | `Covers` | A comma-separated list of area keys from `check.py plan`, each written `<document>/<area>`. Leave it empty for a question that settles something outside every planned area. |
 | `Blocks` | Optional. A comma-separated list of the requirement, backlog and input IDs that wait on this question. Name only IDs that exist. Backlog items need no entry here, because the index adds every item that lists the question in its own `questions`. |
 | `Recommendation` | Always present. The answer you propose, and why. |
-| `Answer` | Required once the question is answered or delegated. It includes the date as `YYYY-MM-DD`. A confirmation of a delegated answer becomes `Status: answered` with "Confirmed by the owner on YYYY-MM-DD." |
+| `Answer` | Required once the question is answered or delegated. It includes the date as `YYYY-MM-DD`. A confirmation of a delegated answer becomes `Status: answered` with "Confirmed by the owner on YYYY-MM-DD." When later work shows that a delegated answer must change before the owner confirmed it, change it in place and add "Amended on YYYY-MM-DD: " with what changed and why. |
 | `Owner` | Optional. Who must answer, when that is not the owner. |
 | `Questionnaire` | Optional. The path of a questionnaire that carries this question to someone else. |
 

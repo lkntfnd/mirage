@@ -20,16 +20,16 @@
 
 | Lane | Area label | Owns | Contract with other lanes |
 |---|---|---|---|
-| {{Lane name}} | area:{{area}} | {{Paths this lane may edit}} | {{What this lane promises the others, such as a frozen API contract}} |
+| {{Lane name}} | area:{{area}} | {{Paths this lane may edit, including the documents of its own parts}} | {{What this lane promises the others, such as a frozen interface}} |
 
-{{State that an item carrying more than one area label names its owning lane, that no lane edits another lane's paths, and the one exception this project allows, if any, such as a shared CI file edited only in a pull request that touches nothing else in it.}}
+{{State that an item carrying more than one area label names its owning lane, that no lane edits another lane's paths, and the one exception this project allows, if any, such as a shared CI file edited only in a pull request that touches nothing else in it. Name who may edit the files no lane owns: the registers, shared documents and automation files.}}
 
 {{State how one lane asks another for something, as docs/delivery.md defines it: the requesting lane writes a draft backlog item with the other lane's area label, stating the exact shape it needs and how it will verify it, and adds that item to its own `blocked_by`. Name the contract file between the lanes, such as the API contract, and who may change it.}}
 
 <!-- mirage:section workflow -->
 ## Picking and finishing work
 
-{{Instruct the agent to run `python3 .mirage/check.py ready`, pick only items in its own lane, read the item's context, acceptance criteria, verification and blockers before starting, move status only with `python3 .mirage/check.py set-status <ID> <STATUS>`, reach done only with a commit SHA and its CI run as evidence, and run the ready check again at the end of every session. State that the files in backlog/ are the plan, that the tracker named in docs/delivery.md is only a board, and that an agent never edits the tracker by hand.}}
+{{Instruct the agent to run `python3 .mirage/check.py ready`, pick only items in its own lane, read the item's context, acceptance criteria, verification and blockers before starting, move status only with `python3 .mirage/check.py set-status <ID> <STATUS>`, reach done only with evidence as the Evidence section defines it, and run the ready check again at the end of every session. State that the files in backlog/ are the plan, that the tracker named in docs/delivery.md is only a board, and that an agent never edits the tracker by hand.}}
 
 <!-- mirage:section conventions -->
 ## Branches, commits and pull requests
@@ -44,4 +44,4 @@
 <!-- mirage:section evidence -->
 ## Evidence
 
-{{Define evidence as a commit SHA together with the CI run it triggered, checked on that exact commit. State where evidence is recorded, such as a comment on the backlog item or the pull request description, and that a test double or a fake response proves the code compiles, never that a live integration works.}}
+{{Define evidence as a commit SHA together with the CI run it triggered, checked on that exact commit. For work no pipeline can check, such as a measurement, a trial build or a delivery, define it as a dated record committed to the repository, and say where such records live and what each must hold. State where evidence is recorded, such as a comment on the backlog item or the pull request description, and that a test double or a fake response proves the code compiles, never that a live integration works.}}

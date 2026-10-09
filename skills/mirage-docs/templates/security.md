@@ -29,7 +29,7 @@
 <!-- mirage:section secrets -->
 ## Secrets management
 
-{{One row per secret the product depends on: where it lives, who can read it and how often it rotates. Never write a secret's value here, only its location and rotation rule, and record a missing secret as an input in docs/inputs.md with ID IN-nnn.}}
+{{One row per secret the product or its build and release depend on, such as a database password, a signing key or a supplier account: where it lives, who can read it and how often it rotates. Never write a secret's value here, only its location and rotation rule, and record a missing secret as an input in docs/inputs.md with ID IN-nnn.}}
 
 | Secret | Where it lives | Who can read it | Rotation |
 |---|---|---|---|
